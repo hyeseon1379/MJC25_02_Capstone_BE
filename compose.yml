@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  mysql:
+    container_name: mysql_container
+    image: mysql:8.0
+    ports:
+      - "4444:3306"
+    # MySQL 8.0의 기본 문자 인코딩을 설정하여 한글 깨짐을 방지합니다.
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./mydata:/var/lib/mysql  # 데이터 영속성을 위한 볼륨
+      - ./initdb.d:/docker-entrypoint-initdb.d # 초기화 스크립트를 위한 볼륨
+    environment:
+      - TZ=Asia/Seoul
+      # .env 파일의 DB 관련 변수를 참조합니다.
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - mjc_network

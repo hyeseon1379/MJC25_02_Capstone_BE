@@ -30,6 +30,17 @@ DROP TABLE IF EXISTS `board_image`;
 DROP TABLE IF EXISTS `book_category`;
 DROP TABLE IF EXISTS `user`;
 
+CREATE TABLE `refresh_token` (
+     `id` BIGINT NOT NULL AUTO_INCREMENT,
+     `user_id` BIGINT NOT NULL,
+     `token` VARCHAR(255) NOT NULL,
+     `expiry_date` DATETIME NOT NULL,
+     PRIMARY KEY (`id`),
+     UNIQUE KEY `uk_user_id` (`user_id`),
+     CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+);
+
+
 -- ========================================
 -- Independent Tables (No Foreign Keys)
 -- ========================================
@@ -46,7 +57,7 @@ CREATE TABLE `user` (
     `color` VARCHAR(10) NULL,
     `address` VARCHAR(255) NULL,
     `profile_img` VARCHAR(255) NULL,
-    `role` ENUM('admin', 'user', 'guest') NOT NULL DEFAULT 'user',
+    `role` ENUM('ADMIN', 'USER') NOT NULL DEFAULT 'USER',
     PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -430,16 +441,16 @@ CREATE INDEX idx_share_board_dates ON `share_board` (`create_date`, `datetime`);
 
 -- Insert Users (10 rows)
 INSERT INTO `user` (`email`, `username`, `password`, `birth`, `phone`, `nickname`, `color`, `address`, `profile_img`, `role`) VALUES
-('admin@bookapp.com', 'admin', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1985-03-15', '010-1234-5678', '관리자', '#FF5733', '서울시 강남구 테헤란로 123', '/images/profiles/admin.jpg', 'admin'),
-('user1@example.com', 'kimjihoon', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1990-05-20', '010-2345-6789', '책벌레지훈', '#3498DB', '서울시 서초구 서초대로 456', '/images/profiles/user1.jpg', 'user'),
-('user2@example.com', 'leesoyoung', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1988-08-12', '010-3456-7890', '독서왕소영', '#E74C3C', '경기도 성남시 분당구 판교역로 789', '/images/profiles/user2.jpg', 'user'),
-('user3@example.com', 'parkminsu', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1992-11-30', '010-4567-8901', '북러버민수', '#2ECC71', '부산시 해운대구 센텀중앙로 101', '/images/profiles/user3.jpg', 'user'),
-('user4@example.com', 'choihyejin', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1995-02-14', '010-5678-9012', '책사랑혜진', '#F39C12', '대구시 수성구 동대구로 202', '/images/profiles/user4.jpg', 'user'),
-('user5@example.com', 'jungwoojin', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1987-07-22', '010-6789-0123', '리딩마스터', '#9B59B6', '인천시 연수구 송도과학로 303', '/images/profiles/user5.jpg', 'user'),
-('user6@example.com', 'kangmina', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1993-04-18', '010-7890-1234', '동화사랑미나', '#1ABC9C', '광주시 서구 상무대로 404', '/images/profiles/user6.jpg', 'user'),
-('user7@example.com', 'yoonsungho', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1991-09-05', '010-8901-2345', '북콜렉터', '#34495E', '대전시 유성구 대학로 505', '/images/profiles/user7.jpg', 'user'),
-('user8@example.com', 'limjiyeon', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1994-12-25', '010-9012-3456', '그림책조아', '#E67E22', '울산시 남구 삼산로 606', '/images/profiles/user8.jpg', 'user'),
-('guest@example.com', 'guestuser', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '2000-01-01', '010-0123-4567', '게스트', '#95A5A6', NULL, '/images/profiles/guest.jpg', 'guest');
+('admin@bookapp.com', 'admin', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1985-03-15', '010-1234-5678', '관리자', '#FF5733', '서울시 강남구 테헤란로 123', '/images/profiles/admin.jpg', 'ADMIN'),
+('user1@example.com', 'kimjihoon', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1990-05-20', '010-2345-6789', '책벌레지훈', '#3498DB', '서울시 서초구 서초대로 456', '/images/profiles/user1.jpg', 'USER'),
+('user2@example.com', 'leesoyoung', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1988-08-12', '010-3456-7890', '독서왕소영', '#E74C3C', '경기도 성남시 분당구 판교역로 789', '/images/profiles/user2.jpg', 'USER'),
+('user3@example.com', 'parkminsu', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1992-11-30', '010-4567-8901', '북러버민수', '#2ECC71', '부산시 해운대구 센텀중앙로 101', '/images/profiles/user3.jpg', 'USER'),
+('user4@example.com', 'choihyejin', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1995-02-14', '010-5678-9012', '책사랑혜진', '#F39C12', '대구시 수성구 동대구로 202', '/images/profiles/user4.jpg', 'USER'),
+('user5@example.com', 'jungwoojin', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1987-07-22', '010-6789-0123', '리딩마스터', '#9B59B6', '인천시 연수구 송도과학로 303', '/images/profiles/user5.jpg', 'USER'),
+('user6@example.com', 'kangmina', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1993-04-18', '010-7890-1234', '동화사랑미나', '#1ABC9C', '광주시 서구 상무대로 404', '/images/profiles/user6.jpg', 'USER'),
+('user7@example.com', 'yoonsungho', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1991-09-05', '010-8901-2345', '북콜렉터', '#34495E', '대전시 유성구 대학로 505', '/images/profiles/user7.jpg', 'USER'),
+('user8@example.com', 'limjiyeon', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1994-12-25', '010-9012-3456', '그림책조아', '#E67E22', '울산시 남구 삼산로 606', '/images/profiles/user8.jpg', 'USER'),
+('guest@example.com', 'guestuser', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '2000-01-01', '010-0123-4567', '게스트', '#95A5A6', NULL, '/images/profiles/guest.jpg', 'USER');
 
 -- Insert Book Categories (10 rows)
 INSERT INTO `book_category` (`category_name`) VALUES

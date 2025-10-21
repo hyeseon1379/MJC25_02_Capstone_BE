@@ -7,7 +7,7 @@ spring:
   
   # Database
   datasource:
-    url: jdbc:mysql://localhost:4444/capstone_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:13333/capstone_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: capstone_user
     password: capstone_pass123
     driver-class-name: com.mysql.cj.jdbc.Driver

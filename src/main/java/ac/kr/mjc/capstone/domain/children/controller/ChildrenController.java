@@ -47,7 +47,7 @@ public class ChildrenController {
         return ApiResponse.success(response);
     }
 
-    @PutMapping("/{childId}")
+    @PatchMapping("/{childId}")
     public ApiResponse<ChildrenResponse> updateChild(
             @AuthenticationPrincipal Long userId,
             @PathVariable Long childId,

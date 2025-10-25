@@ -1,7 +1,7 @@
 package ac.kr.mjc.capstone.domain.user.dto;
 
 import ac.kr.mjc.capstone.domain.user.entity.Role;
-import ac.kr.mjc.capstone.domain.user.entity.User;
+import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,17 +24,17 @@ public class UserResponse {
     private String address;
     private Role role;
 
-    public static UserResponse from(User user) {
+    public static UserResponse from(UserEntity userEntity) {
         return UserResponse.builder()
-                .userId(user.getUserId())
-                .email(user.getEmail())
-                .username(user.getUsername())
-                .birth(user.getBirth())
-                .phone(user.getPhone())
-                .nickname(user.getNickname())
-                .color(user.getColor())
-                .address(user.getAddress())
-                .role(user.getRole())
+                .userId(userEntity.getUserId())
+                .email(userEntity.getEmail())
+                .username(userEntity.getUsername())
+                .birth(userEntity.getBirth())
+                .phone(userEntity.getPhone())
+                .nickname(userEntity.getNickname())
+                .color(userEntity.getColor())
+                .address(userEntity.getAddress())
+                .role(userEntity.getRole())
                 .build();
     }
 }

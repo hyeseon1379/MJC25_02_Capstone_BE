@@ -29,6 +29,15 @@ public class UserController {
         return ApiResponse.success(userResponse);
     }
 
+    @PutMapping("/me")
+    public ApiResponse<UserResponse> updateMyProfile(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody UserUpdateRequest request
+    ) {
+        UserResponse userResponse = userService.updateUserProfile(userId, request);
+        return ApiResponse.success("프로필 수정 성공", userResponse);
+    }
+
     @PostMapping("/verify")
     public ApiResponse<Boolean> verifyUser(@Valid @RequestBody UserVerificationRequest request) {
         boolean isVerified = userService.verifyUser(request);

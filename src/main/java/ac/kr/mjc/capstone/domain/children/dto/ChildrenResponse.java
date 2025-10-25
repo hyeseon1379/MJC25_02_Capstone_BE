@@ -17,15 +17,15 @@ public class ChildrenResponse {
     private String profileImg;
     private String color;
 
-    public static ChildrenResponse from(ChildrenEntity user) {
+    public static ChildrenResponse from(ChildrenEntity child) {
         return ChildrenResponse.builder()
-                .childId(user.getChildId())
-                .childName(user.getChildName())
-                .childBirth(user.getChildBirth())
-                .birthOrder(user.getBirthOrder())
-                .profileImg(user.getProfileImg())
-                .color(user.getColor())
-                .gender(user.getGender())
+                .childId(child.getChildId())
+                .childName(child.getChildName())
+                .childBirth(child.getChildBirth())
+                .birthOrder(child.getBirthOrder())
+                .profileImg(child.getProfileImg())
+                .color(child.getColor())
+                .gender(child.getGender())
                 .build();
     }
 }

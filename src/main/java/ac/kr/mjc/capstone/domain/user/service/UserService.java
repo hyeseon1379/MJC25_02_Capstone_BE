@@ -1,6 +1,7 @@
 package ac.kr.mjc.capstone.domain.user.service;
 
 import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
+import ac.kr.mjc.capstone.domain.children.repository.ChildrenRepository;
 import ac.kr.mjc.capstone.domain.user.dto.PasswordResetRequest;
 import ac.kr.mjc.capstone.domain.user.dto.SignupRequest;
 import ac.kr.mjc.capstone.domain.user.dto.UserResponse;
@@ -26,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ChildrenRepository childrenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -132,6 +134,9 @@ public class UserService {
 
         // 사용자 삭제
         userRepository.delete(userEntity);
+
+        // 자녀 삭제
+        childrenRepository.deleteAllByUserEntity_UserId(userId);
 
         log.info("User deleted: userId={}, email={}", userId, userEntity.getEmail());
     }

@@ -44,5 +44,15 @@ public class ChildrenEntity {
     @JoinColumn(name = "user_id")
     private UserEntity userEntity;
 
+    // 업데이트 메서드 (Dirty Checking 사용)
+    public void updateProfile(String childName, LocalDate childBirth, ChildGender gender, 
+                             Integer birthOrder, String color, String profileImg) {
+        if (childName != null) this.childName = childName;
+        if (childBirth != null) this.childBirth = childBirth;
+        if (gender != null) this.gender = gender;
+        if (birthOrder != null) this.birthOrder = birthOrder;
+        if (color != null) this.color = color;
+        if (profileImg != null) this.profileImg = profileImg;
+    }
 
 }

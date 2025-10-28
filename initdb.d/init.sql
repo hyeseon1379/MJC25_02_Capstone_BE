@@ -50,7 +50,7 @@ CREATE TABLE `user` (
     `password` VARCHAR(255) NOT NULL,
     `birth` DATE NULL,
     `phone` VARCHAR(20) NULL,
-    `nickname` VARCHAR(20) NULL,
+    `nickname` VARCHAR(20) NULL UNIQUE,
     `color` VARCHAR(10) NULL,
     `address` VARCHAR(255) NULL,
     `profile_img` VARCHAR(255) NULL,

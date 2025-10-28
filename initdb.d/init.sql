@@ -28,7 +28,7 @@ DROP TABLE IF EXISTS `package_categories`;
 DROP TABLE IF EXISTS `share_board_image`;
 DROP TABLE IF EXISTS `board_image`;
 DROP TABLE IF EXISTS `book_category`;
-DROP TABLE IF EXISTS `userEntity`;
+DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE `refresh_token` (
      `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -37,7 +37,7 @@ CREATE TABLE `refresh_token` (
      `expiry_date` DATETIME NOT NULL,
      PRIMARY KEY (`id`),
      UNIQUE KEY `uk_user_id` (`user_id`),
-     CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE
+     CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 );
 
 
@@ -46,7 +46,7 @@ CREATE TABLE `refresh_token` (
 -- ========================================
 
 -- User Table
-CREATE TABLE `userEntity` (
+CREATE TABLE `user` (
     `user_id` BIGINT NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(255) NOT NULL UNIQUE,
     `username` VARCHAR(20) NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE `children` (
     `color` VARCHAR(10) NULL,
     PRIMARY KEY (`child_id`),
     KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_children_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_children_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Reader Table
@@ -125,7 +125,7 @@ CREATE TABLE `reader` (
     `type` ENUM('adult', 'child') NOT NULL,
     PRIMARY KEY (`reader_id`),
     KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_reader_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_reader_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Book Table
@@ -154,7 +154,7 @@ CREATE TABLE `package` (
     KEY `idx_category_id` (`category_id`),
     KEY `idx_user_id` (`user_id`),
     CONSTRAINT `fk_package_category` FOREIGN KEY (`category_id`) REFERENCES `package_categories` (`category_id`) ON DELETE RESTRICT,
-    CONSTRAINT `fk_package_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_package_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Contest Table
@@ -170,7 +170,7 @@ CREATE TABLE `contest` (
     PRIMARY KEY (`contest_id`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_progress_status` (`progress_status`),
-    CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Board Table
@@ -185,7 +185,7 @@ CREATE TABLE `board` (
     PRIMARY KEY (`board_id`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_image_id` (`image_id`),
-    CONSTRAINT `fk_board_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_board_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -247,7 +247,7 @@ CREATE TABLE `Subscription` (
     KEY `idx_user_id` (`user_id`),
     KEY `idx_package_id` (`package_id`),
     KEY `idx_status` (`status`),
-    CONSTRAINT `fk_subscription_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_subscription_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_subscription_package` FOREIGN KEY (`package_id`) REFERENCES `package` (`package_id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -301,7 +301,7 @@ CREATE TABLE `share_board` (
     KEY `idx_category_id` (`category_id`),
     KEY `idx_image_id` (`image_id`),
     KEY `idx_share_status` (`share_status`),
-    CONSTRAINT `fk_share_board_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_share_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_share_board_category` FOREIGN KEY (`category_id`) REFERENCES `book_category` (`category_id`) ON DELETE SET NULL,
     CONSTRAINT `fk_share_board_image` FOREIGN KEY (`image_id`) REFERENCES `share_board_image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -318,7 +318,7 @@ CREATE TABLE `reply` (
     KEY `idx_board_id` (`board_id`),
     KEY `idx_user_id` (`user_id`),
     CONSTRAINT `fk_reply_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`board_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_reply_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_reply_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Contest Result Table
@@ -362,7 +362,7 @@ CREATE TABLE `story` (
     KEY `idx_user_id` (`user_id`),
     KEY `idx_vote_count` (`vote_count`),
     CONSTRAINT `fk_story_details` FOREIGN KEY (`details_id`) REFERENCES `book_details` (`details_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_story_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_story_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Share Request Table
@@ -378,7 +378,7 @@ CREATE TABLE `share_request` (
     KEY `idx_user_id` (`user_id`),
     KEY `idx_share_id` (`share_id`),
     KEY `idx_result_status` (`result_status`),
-    CONSTRAINT `fk_share_request_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_share_request_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_share_request_share` FOREIGN KEY (`share_id`) REFERENCES `share_board` (`share_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -410,7 +410,7 @@ CREATE TABLE `vote` (
     KEY `idx_user_id` (`user_id`),
     UNIQUE KEY `uk_story_user` (`story_id`, `user_id`),
     CONSTRAINT `fk_vote_story` FOREIGN KEY (`story_id`) REFERENCES `story` (`story_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_vote_user` FOREIGN KEY (`user_id`) REFERENCES `userEntity` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_vote_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Result Images Table
@@ -429,7 +429,7 @@ CREATE TABLE `result_images` (
 -- ========================================
 
 -- Additional indexes for frequently queried columns
-CREATE INDEX idx_user_email ON `userEntity` (`email`);
+CREATE INDEX idx_user_email ON `user` (`email`);
 CREATE INDEX idx_book_title ON `Book` (`title`);
 CREATE INDEX idx_contest_dates ON `contest` (`start_date`, `end_date`);
 CREATE INDEX idx_subscription_dates ON `Subscription` (`start_date`, `end_date`);
@@ -440,7 +440,7 @@ CREATE INDEX idx_share_board_dates ON `share_board` (`create_date`, `datetime`);
 -- ========================================
 
 -- Insert Users (10 rows)
-INSERT INTO `userEntity` (`email`, `username`, `password`, `birth`, `phone`, `nickname`, `color`, `address`, `profile_img`, `role`) VALUES
+INSERT INTO `user` (`email`, `username`, `password`, `birth`, `phone`, `nickname`, `color`, `address`, `profile_img`, `role`) VALUES
 ('admin@bookapp.com', 'admin', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1985-03-15', '010-1234-5678', '관리자', '#FF5733', '서울시 강남구 테헤란로 123', '/images/profiles/admin.jpg', 'ADMIN'),
 ('user1@example.com', 'kimjihoon', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1990-05-20', '010-2345-6789', '책벌레지훈', '#3498DB', '서울시 서초구 서초대로 456', '/images/profiles/user1.jpg', 'USER'),
 ('user2@example.com', 'leesoyoung', '$2a$10$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '1988-08-12', '010-3456-7890', '독서왕소영', '#E74C3C', '경기도 성남시 분당구 판교역로 789', '/images/profiles/user2.jpg', 'USER'),

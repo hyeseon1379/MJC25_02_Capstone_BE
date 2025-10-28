@@ -4,7 +4,7 @@ import ac.kr.mjc.capstone.auth.dto.LoginRequest;
 import ac.kr.mjc.capstone.auth.dto.TokenResponse;
 import ac.kr.mjc.capstone.auth.entity.RefreshToken;
 import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
-import ac.kr.mjc.capstone.domain.user.entity.User;
+import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
 import ac.kr.mjc.capstone.global.config.JwtProperties;
 import ac.kr.mjc.capstone.global.error.CustomException;
@@ -31,22 +31,22 @@ public class AuthService {
     @Transactional
     public TokenResponse login(LoginRequest request) {
         // 사용자 조회
-        User user = userRepository.findByEmail(request.getEmail())
+        UserEntity userEntity = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_CREDENTIALS));
 
         // 비밀번호 확인
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         // 토큰 생성
-        String accessToken = jwtService.generateAccessToken(user.getUserId(), user.getEmail());
-        String refreshToken = jwtService.generateRefreshToken(user.getUserId());
+        String accessToken = jwtService.generateAccessToken(userEntity.getUserId(), userEntity.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(userEntity.getUserId());
 
         // RefreshToken 저장 또는 업데이트
-        saveOrUpdateRefreshToken(user.getUserId(), refreshToken);
+        saveOrUpdateRefreshToken(userEntity.getUserId(), refreshToken);
 
-        log.info("User logged in: userId={}, email={}", user.getUserId(), user.getEmail());
+        log.info("User logged in: userId={}, email={}", userEntity.getUserId(), userEntity.getEmail());
 
         return TokenResponse.builder()
                 .accessToken(accessToken)
@@ -70,13 +70,13 @@ public class AuthService {
         }
 
         // 사용자 조회
-        User user = userRepository.findById(storedToken.getUserId())
+        UserEntity userEntity = userRepository.findById(storedToken.getUserId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 새 AccessToken 생성
-        String newAccessToken = jwtService.generateAccessToken(user.getUserId(), user.getEmail());
+        String newAccessToken = jwtService.generateAccessToken(userEntity.getUserId(), userEntity.getEmail());
 
-        log.info("Access token refreshed: userId={}", user.getUserId());
+        log.info("Access token refreshed: userId={}", userEntity.getUserId());
 
         return TokenResponse.builder()
                 .accessToken(newAccessToken)

@@ -1,12 +1,14 @@
 package ac.kr.mjc.capstone.domain.user.service;
 
 import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
+import ac.kr.mjc.capstone.domain.children.repository.ChildrenRepository;
 import ac.kr.mjc.capstone.domain.user.dto.PasswordResetRequest;
 import ac.kr.mjc.capstone.domain.user.dto.SignupRequest;
 import ac.kr.mjc.capstone.domain.user.dto.UserResponse;
+import ac.kr.mjc.capstone.domain.user.dto.UserUpdateRequest;
 import ac.kr.mjc.capstone.domain.user.dto.UserVerificationRequest;
 import ac.kr.mjc.capstone.domain.user.entity.Role;
-import ac.kr.mjc.capstone.domain.user.entity.User;
+import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
 import ac.kr.mjc.capstone.global.error.CustomException;
 import ac.kr.mjc.capstone.global.error.ErrorCode;
@@ -25,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ChildrenRepository childrenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -51,7 +54,7 @@ public class UserService {
         }
 
         // 사용자 생성
-        User user = User.builder()
+        UserEntity userEntity = UserEntity.builder()
                 .email(request.getEmail())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -63,17 +66,17 @@ public class UserService {
                 .role(Role.USER)
                 .build();
 
-        User savedUser = userRepository.save(user);
-        log.info("User created: userId={}, email={}", savedUser.getUserId(), savedUser.getEmail());
+        UserEntity savedUserEntity = userRepository.save(userEntity);
+        log.info("User created: userId={}, email={}", savedUserEntity.getUserId(), savedUserEntity.getEmail());
 
-        return UserResponse.from(savedUser);
+        return UserResponse.from(savedUserEntity);
     }
 
     @Transactional(readOnly = true)
     public UserResponse getUserInfo(Long userId) {
-        User user = userRepository.findById(userId)
+        UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        return UserResponse.from(user);
+        return UserResponse.from(userEntity);
     }
 
     @Transactional
@@ -85,24 +88,44 @@ public class UserService {
     @Transactional
     public void resetPassword(PasswordResetRequest request) {
         // 사용자 인증
-        User user = userRepository.findByEmailAndUsername(request.getEmail(), request.getUsername())
+        UserEntity userEntity = userRepository.findByEmailAndUsername(request.getEmail(), request.getUsername())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_VERIFICATION_FAILED));
 
         // 비밀번호 업데이트
-        user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+        userEntity.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(userEntity);
 
-        log.info("Password reset: userId={}, email={}", user.getUserId(), user.getEmail());
+        log.info("Password reset: userId={}, email={}", userEntity.getUserId(), userEntity.getEmail());
+    }
+
+    @Transactional
+    public UserResponse updateUserProfile(Long userId, UserUpdateRequest request) {
+        // 사용자 조회
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 프로필 업데이트
+        userEntity.updateProfile(
+                request.getNickname(),
+                request.getPhone(),
+                request.getAddress(),
+                request.getColor()
+        );
+
+        UserEntity updatedUser = userRepository.save(userEntity);
+        log.info("User profile updated: userId={}, email={}", updatedUser.getUserId(), updatedUser.getEmail());
+
+        return UserResponse.from(updatedUser);
     }
 
     @Transactional
     public void deleteUser(Long userId, String password) {
         // 사용자 조회
-        User user = userRepository.findById(userId)
+        UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 비밀번호 확인
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, userEntity.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
 
@@ -110,8 +133,11 @@ public class UserService {
         refreshTokenRepository.deleteByUserId(userId);
 
         // 사용자 삭제
-        userRepository.delete(user);
+        userRepository.delete(userEntity);
 
-        log.info("User deleted: userId={}, email={}", userId, user.getEmail());
+        // 자녀 삭제
+        childrenRepository.deleteAllByUserEntity_UserId(userId);
+
+        log.info("User deleted: userId={}, email={}", userId, userEntity.getEmail());
     }
 }

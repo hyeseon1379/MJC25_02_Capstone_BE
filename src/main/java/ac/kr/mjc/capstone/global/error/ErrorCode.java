@@ -16,6 +16,7 @@ public enum ErrorCode {
     UNAUTHORIZED("AUTH003", "인증이 필요합니다"),
     INVALID_CREDENTIALS("AUTH004", "아이디 또는 비밀번호가 일치하지 않습니다"),
     TOKEN_NOT_FOUND("AUTH005", "토큰을 찾을 수 없습니다"),
+    LOGIN_FAILED("AUTH006", "로그인 실패"),
 
     // User
     USER_NOT_FOUND("USER001", "사용자를 찾을 수 없습니다"),

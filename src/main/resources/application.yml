@@ -6,12 +6,14 @@ spring:
     name: capstone
   
   # Database
+  # Docker 환경에서는 'localhost' 대신 'mysql' 서비스 이름 사용 (docker-compose에서 설정)
   datasource:
-    url: jdbc:mysql://localhost:13333/capstone?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: capstone_user
-    password: capstone_pass123
+    url: jdbc:mysql://mysql:3306/capstone?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    # 환경 변수에서 값 주입
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-  
+
   # JPA
   jpa:
     hibernate:
@@ -20,10 +22,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+        # MySQL 8.0 버전에 맞는 Dialect 사용 권장
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
 # JWT
 jwt:
-  secret: your-super-secure-secret-key-at-least-256-bits-long-change-this-in-production-environment
+  # 환경 변수에서 값 주입
+  secret: ${JWT_SECRET_KEY}
   access-token-expiration: 3600000
   refresh-token-expiration: 604800000

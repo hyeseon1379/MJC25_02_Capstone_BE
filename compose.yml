@@ -23,7 +23,7 @@ services:
       - capstone
 
   backend:
-    image: jhh0101/capstone:v1.0.0
+    image: jhh0101/capstone:v1.0.1
     container_name: backend_container
     ports:
       - "18888:8082"

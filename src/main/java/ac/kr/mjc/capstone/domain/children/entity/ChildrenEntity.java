@@ -27,7 +27,6 @@ public class ChildrenEntity {
     private LocalDate childBirth;
 
     @Column(name = "birth_order")
-    @Past(message = "생년월일은 과거여야 합니다")
     private Integer birthOrder;
 
     @Column(length = 10)

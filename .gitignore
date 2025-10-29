@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Environment & Database ###
+.env
+mydata/
+mysql_data/

@@ -7,6 +7,8 @@ services:
     ports:
       # 로컬 PC의 13333 포트 -> 컨테이너의 3306 포트로 연결
       - "13333:3306"
+    env_file:
+      - .env
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci

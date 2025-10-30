@@ -106,7 +106,7 @@ CREATE TABLE `children` (
     `user_id` BIGINT NOT NULL,
     `child_name` VARCHAR(50) NOT NULL,
     `child_birth` DATE NULL,
-    `gender` ENUM('male', 'female', 'other') NULL,
+    `gender` ENUM('M', 'F') NULL,
     `birth_order` INT NULL COMMENT 'Child order number',
     `profile_img` VARCHAR(255) NULL,
     `color` VARCHAR(10) NULL,

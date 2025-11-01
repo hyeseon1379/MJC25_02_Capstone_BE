@@ -23,7 +23,10 @@ public enum ErrorCode {
     DUPLICATE_EMAIL("USER002", "이미 사용 중인 이메일입니다"),
     DUPLICATE_USERNAME("USER003", "이미 사용 중인 사용자 이름입니다"),
     USER_VERIFICATION_FAILED("USER004", "사용자 인증에 실패했습니다"),
-    PASSWORD_MISMATCH("USER005", "비밀번호가 일치하지 않습니다");
+    PASSWORD_MISMATCH("USER005", "비밀번호가 일치하지 않습니다"),
+
+    // Child
+    CHILD_NOT_FOUND("USER001", "사용자를 찾을 수 없습니다");
 
     private final String code;
     private final String message;

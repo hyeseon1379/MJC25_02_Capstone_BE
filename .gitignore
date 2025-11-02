@@ -40,3 +40,4 @@ out/
 .env
 mydata/
 mysql_data/
+uploads/

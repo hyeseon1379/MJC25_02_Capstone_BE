@@ -8,7 +8,7 @@ spring:
   # Database
   # Docker 환경에서는 'localhost' 대신 'mysql' 서비스 이름 사용 (docker-compose에서 설정)
   datasource:
-    url: jdbc:mysql://mysql:3306/capstone?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:13333/capstone?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true}
     # 환경 변수에서 값 주입
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
@@ -24,6 +24,17 @@ spring:
         format_sql: true
         # MySQL 8.0 버전에 맞는 Dialect 사용 권장
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # File Upload
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB      # 최대 파일 크기
+      max-request-size: 10MB   # 최대 요청 크기
+
+# File Upload Directory
+file:
+  upload-dir: uploads/board-images
 
 # JWT
 jwt:

@@ -1,11 +1,14 @@
 package ac.kr.mjc.capstone.domain.boardimage.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
-@Data
 @Entity
 @Table(name = "board_image")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class BoardImageEntity {
 
     @Id

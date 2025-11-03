@@ -25,8 +25,17 @@ public enum ErrorCode {
     USER_VERIFICATION_FAILED("USER004", "사용자 인증에 실패했습니다"),
     PASSWORD_MISMATCH("USER005", "비밀번호가 일치하지 않습니다"),
 
+    // Board
+    BOARD_NOT_FOUND("BOARD001", "게시글을 찾을 수 없습니다"),
+    FORBIDDEN("BOARD002", "권한이 없습니다"),
+
+    // BoardImage
+    IMAGE_NOT_FOUND("IMAGE001", "이미지를 찾을 수 없습니다"),
+    IMAGE_UPLOAD_FAILED("IMAGE002", "이미지 업로드에 실패했습니다"),
+    INVALID_IMAGE_FORMAT("IMAGE003", "지원하지 않는 이미지 형식입니다"),
+
     // Child
-    CHILD_NOT_FOUND("USER001", "사용자를 찾을 수 없습니다");
+    CHILD_NOT_FOUND("CHILD001", "자녀를 찾을 수 없습니다");
 
     private final String code;
     private final String message;

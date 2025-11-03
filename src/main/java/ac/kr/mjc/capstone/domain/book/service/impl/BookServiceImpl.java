@@ -1,7 +1,6 @@
 package ac.kr.mjc.capstone.domain.book.service.impl;
 
 import ac.kr.mjc.capstone.domain.book.dto.BookDetailsRequest;
-import ac.kr.mjc.capstone.domain.book.dto.BookDetailsResponse;
 import ac.kr.mjc.capstone.domain.book.dto.BookRequest;
 import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
 import ac.kr.mjc.capstone.domain.book.entity.*;
@@ -9,7 +8,6 @@ import ac.kr.mjc.capstone.domain.book.repository.BookDetailsRepository;
 import ac.kr.mjc.capstone.domain.book.repository.BookRepository;
 import ac.kr.mjc.capstone.domain.book.repository.ReaderRepository;
 import ac.kr.mjc.capstone.domain.book.service.inf.BookService;
-import ac.kr.mjc.capstone.domain.children.dto.ChildrenResponse;
 import ac.kr.mjc.capstone.domain.children.entity.ChildrenEntity;
 import ac.kr.mjc.capstone.domain.children.repository.ChildrenRepository;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;

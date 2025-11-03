@@ -33,6 +33,13 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/swagger-ui.html",             // 구버전
+                                "/swagger-ui/**",               // 최신 UI 리소스
+                                "/v3/api-docs/**",              // OpenAPI 스펙 JSON
+                                "/swagger-resources/**",        // Swagger 리소스
+                                "/webjars/**"                   // Swagger 의존 정적파일
+                        ).permitAll()
+                        .requestMatchers(
                                 "/api/auth/**",
                                 "/api/users/signup",
                                 "/api/users/verify",

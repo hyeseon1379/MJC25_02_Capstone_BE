@@ -4,11 +4,11 @@ server:
 spring:
   application:
     name: capstone
-  
+
   # Database
   # Docker 환경에서는 'localhost' 대신 'mysql' 서비스 이름 사용 (docker-compose에서 설정)
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:13333/capstone?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true}
+    url: ${MYSQL_URL}
     # 환경 변수에서 값 주입
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
@@ -17,7 +17,7 @@ spring:
   # JPA
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update #none
     show-sql: true
     properties:
       hibernate:

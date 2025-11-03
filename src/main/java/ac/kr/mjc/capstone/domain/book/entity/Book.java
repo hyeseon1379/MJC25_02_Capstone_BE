@@ -30,7 +30,7 @@ public class Book {
     @Column(name = "publisher")
     private String publisher;
 
-    @OneToMany(mappedBy = "Book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookDetails> bookDetails = new ArrayList<>();
 
 }

@@ -1,5 +1,6 @@
 package ac.kr.mjc.capstone.domain.book.entity;
 
+import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,7 +31,12 @@ public class Book {
     @Column(name = "publisher")
     private String publisher;
 
+    @Builder.Default
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookDetails> bookDetails = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false) // user_id 컬럼으로 매핑
+    private UserEntity user;
 
 }

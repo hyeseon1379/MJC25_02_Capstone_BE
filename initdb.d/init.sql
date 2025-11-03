@@ -124,11 +124,14 @@ CREATE TABLE `reader` (
 -- Book Table (depends on book_category)
 CREATE TABLE `Book` (
     `book_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
     `title` VARCHAR(255) NOT NULL,
     `img_url` VARCHAR(500) NULL,
     `author` VARCHAR(100) NULL,
     `publisher` VARCHAR(100) NULL,
-    PRIMARY KEY (`book_id`)
+    PRIMARY KEY (`book_id`),
+    KEY `idx_user_id` (`user_id`),
+    CONSTRAINT `fk_Book_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Package Table (depends on package_categories and user)

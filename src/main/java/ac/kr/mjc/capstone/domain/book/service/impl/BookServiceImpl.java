@@ -1,6 +1,7 @@
 package ac.kr.mjc.capstone.domain.book.service.impl;
 
 import ac.kr.mjc.capstone.domain.book.dto.BookDetailsRequest;
+import ac.kr.mjc.capstone.domain.book.dto.BookListResponse;
 import ac.kr.mjc.capstone.domain.book.dto.BookRequest;
 import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
 import ac.kr.mjc.capstone.domain.book.entity.*;
@@ -14,6 +15,7 @@ import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
 import ac.kr.mjc.capstone.global.error.CustomException;
 import ac.kr.mjc.capstone.global.error.ErrorCode;
+import ac.kr.mjc.capstone.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +46,7 @@ public class BookServiceImpl implements BookService {
                 .author(bookRequest.getAuthor())
                 .publisher(bookRequest.getPublisher())
                 .imgUrl(bookRequest.getImgUrl())
+                .user(userEntity)
                 .build();
 
         if(bookRequest.getBookDetails() == null || bookRequest.getBookDetails().isEmpty()) {
@@ -75,6 +78,33 @@ public class BookServiceImpl implements BookService {
 
         return BookResponse.from(savedBook);
 
+    }
+
+    @Override
+    public ApiResponse<BookResponse> getMyBook(Long userId,Long bookId){
+
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        Book book = bookRepository.findByBookIdAndUser(bookId, userEntity)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOOK_NOT_FOUND));
+
+        BookResponse bookResponse = BookResponse.from(book);
+
+        return ApiResponse.success("도서 정보 조회 성공", bookResponse);
+    }
+
+    @Override
+    public ApiResponse<List<BookListResponse>> getAllMyBook(Long userId){
+
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        List<BookListResponse> bookListResponse = bookRepository.findByUserOrderByBookIdDesc(userEntity).stream()
+                .map(BookListResponse::from)
+                .toList();
+
+        return ApiResponse.success("사용자 도서 목록 조회 성공", bookListResponse);
     }
 
     private Reader createReader(UserEntity userEntity, BookDetailsRequest detailRequest) {

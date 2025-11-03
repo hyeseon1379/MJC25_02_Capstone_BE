@@ -35,7 +35,10 @@ public enum ErrorCode {
     INVALID_IMAGE_FORMAT("IMAGE003", "지원하지 않는 이미지 형식입니다"),
 
     // Child
-    CHILD_NOT_FOUND("CHILD001", "자녀를 찾을 수 없습니다");
+    CHILD_NOT_FOUND("CHILD001", "자녀를 찾을 수 없습니다"),
+
+    //Book
+    BOOK_NOT_FOUND("BOOK001","도서를 찾을 수 없습니다.");
 
     private final String code;
     private final String message;

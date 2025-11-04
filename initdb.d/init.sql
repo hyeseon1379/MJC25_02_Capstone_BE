@@ -58,13 +58,6 @@ CREATE TABLE `user` (
     PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Book Category Table
-CREATE TABLE `book_category` (
-    `category_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `category_name` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- Package Categories Table
 CREATE TABLE `package_categories` (
     `category_id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -119,24 +112,26 @@ CREATE TABLE `children` (
 CREATE TABLE `reader` (
     `reader_id` BIGINT NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT NOT NULL,
-    `type` ENUM('adult', 'child') NOT NULL,
+    `child_id` BIGINT NULL,
+    `reader_type` ENUM('adult', 'child') NOT NULL,
     PRIMARY KEY (`reader_id`),
     KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_reader_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+    KEY `idx_child_id` (`child_id`),
+    CONSTRAINT `fk_reader_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_reader_children` FOREIGN KEY (`child_id`) REFERENCES `children` (`child_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Book Table (depends on book_category)
 CREATE TABLE `Book` (
     `book_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `category_id` BIGINT NULL,
+    `user_id` BIGINT NOT NULL,
     `title` VARCHAR(255) NOT NULL,
     `img_url` VARCHAR(500) NULL,
     `author` VARCHAR(100) NULL,
     `publisher` VARCHAR(100) NULL,
-    `isbn` VARCHAR(20) NULL,
     PRIMARY KEY (`book_id`),
-    KEY `idx_category_id` (`category_id`),
-    CONSTRAINT `fk_book_category` FOREIGN KEY (`category_id`) REFERENCES `book_category` (`category_id`) ON DELETE SET NULL
+    KEY `idx_user_id` (`user_id`),
+    CONSTRAINT `fk_Book_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Package Table (depends on package_categories and user)
@@ -195,13 +190,9 @@ CREATE TABLE `book_details` (
     `details_id` BIGINT NOT NULL AUTO_INCREMENT,
     `book_id` BIGINT NOT NULL,
     `reader_id` BIGINT NOT NULL,
-    `status` ENUM('to_read', 'reading', 'completed', 'on_hold', 'dropped') NOT NULL DEFAULT 'to_read',
-    `rating` TINYINT NULL CHECK (rating >= 1 AND rating <= 5),
-    `review` TEXT NULL,
+    `status` ENUM('to_read', 'reading', 'completed') NOT NULL DEFAULT 'to_read',
     `start_date` DATE NULL,
     `end_date` DATE NULL,
-    `page_count` INT NULL,
-    `favorite` BOOLEAN NOT NULL DEFAULT FALSE,
     `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`details_id`),
@@ -445,4 +436,13 @@ INSERT INTO `user` VALUES (2,'admin1@admin.com','admin1','$2a$10$UX7LPes/mDVlBOl
                           (3,'admin2@admin.com','admin2','$2a$10$rP.0wpQ5KDjGhqvAceh5YO.poPHgikyHNlmMaLMJ.2rtZ9LX.2XG.','2000-01-01','010-1111-1111','admin2','#FFFFFF','admin',NULL,'ADMIN'),
                           (4,'admin3@admin.com','admin3','$2a$10$tDI0SWtroMdOpduPIQd2zOKVnvCDzx1qK7KSo.ZzrsF6s4IQE5W66','2000-01-01','010-1111-1111','admin3','#FFFFFF','admin',NULL,'ADMIN');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
+LOCK TABLES `children` WRITE;
+/*!40000 ALTER TABLE `children` DISABLE KEYS */;
+INSERT INTO `children` VALUES (1, 2,'child1', '2018-05-15', 'M', 1, 'http://example.com/profiles/example.jpg', '#FF5733'),
+                              (2, 2,'child2', '2019-05-15', 'F', 2, 'http://example.com/profiles/example.jpg', '#FF5733'),
+                              (3, 3,'child3', '2017-05-15', 'M', 1, 'http://example.com/profiles/example.jpg', '#FF5733');
+/*!40000 ALTER TABLE `children` ENABLE KEYS */;
 UNLOCK TABLES;

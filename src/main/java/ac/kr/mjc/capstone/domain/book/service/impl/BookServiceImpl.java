@@ -140,6 +140,44 @@ public class BookServiceImpl implements BookService {
         return BookResponse.from(book);
     }
 
+    @Override
+    public void deleteBook(Long userId, Long bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOOK_NOT_FOUND));
+
+        if (!book.getUser().getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        bookRepository.delete(book);
+    }
+
+    @Override
+    public void deleteBooks(Long userId,  BookDeleteRequest bookDeleteRequest) {
+
+        List<Long> bookIds = bookDeleteRequest.getBookIds();
+
+        if (bookIds == null || bookIds.isEmpty()) {
+            throw new CustomException(ErrorCode.BOOK_NOT_FOUND);
+        }
+
+        List<Book> books = bookRepository.findAllById(bookIds);
+
+        if (books.size() != bookIds.size()) {
+            throw new CustomException(ErrorCode.BOOK_NOT_FOUND, "요청된 도서 중 존재하지 않는 ID가 포함되어 있습니다.");
+        }
+
+        boolean allOwned = books.stream()
+                .allMatch(book -> book.getUser().getUserId().equals(userId));
+
+        if (!allOwned) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "삭제 권한이 없는 도서가 목록에 포함되어 있습니다.");
+        }
+
+       bookRepository.deleteAll(books);;
+    }
+
+
     private Reader createReader(UserEntity userEntity, BookDetailsRequest detailRequest) {
         if(detailRequest.getChildId() != null) {
             ChildrenEntity childrenEntity = childrenRepository.findById(detailRequest.getChildId())
@@ -231,8 +269,6 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-
-    // --- updateBookDetailsList 메서드 수정 ---
     private void updateBookDetailsList(UserEntity userEntity, Book book, List<BookDetailsUpdateRequest> requestedDetails) {
 
         Map<Long, BookDetails> existingDetailsMap = book.getBookDetails().stream()
@@ -249,7 +285,7 @@ public class BookServiceImpl implements BookService {
                 BookDetails detailToUpdate = existingDetailsMap.get(request.getDetailsId());
 
                 detailToUpdate.update(
-                        updateReader, // 2) BookDetails 엔티티의 reader 필드(FK)를 독자 B로 변경합니다.
+                        updateReader,
                         calculateReadingStatus(request.getStartDate(),request.getEndDate()),
                         request.getStartDate(),
                         request.getEndDate()

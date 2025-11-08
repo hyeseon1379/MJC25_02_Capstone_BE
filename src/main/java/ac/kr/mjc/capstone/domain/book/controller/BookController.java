@@ -1,9 +1,6 @@
 package ac.kr.mjc.capstone.domain.book.controller;
 
-import ac.kr.mjc.capstone.domain.book.dto.BookListResponse;
-import ac.kr.mjc.capstone.domain.book.dto.BookRequest;
-import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
-import ac.kr.mjc.capstone.domain.book.dto.BookUpdateRequest;
+import ac.kr.mjc.capstone.domain.book.dto.*;
 import ac.kr.mjc.capstone.domain.book.service.inf.BookService;
 import ac.kr.mjc.capstone.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,6 +56,26 @@ public class BookController {
         BookResponse bookResponse = bookService.updateBook(userId, bookId, request);
         return ApiResponse.success("도서 정보 수정 성공", bookResponse);
 
+    }
+
+    @Operation(summary = "도서 삭제", description = "도서를 삭제합니다")
+    @DeleteMapping("/{bookId}")
+    public ApiResponse<Void> deleteBook(@AuthenticationPrincipal Long userId,
+                                        @PathVariable("bookId") Long bookId) {
+
+        bookService.deleteBook(userId, bookId);
+
+        return ApiResponse.success("도서 삭제 성공");
+    }
+
+    @Operation(summary = "도서 리스트 삭제", description = "도서 리스트를 삭제합니다")
+    @DeleteMapping
+    public ApiResponse<Void> deleteBooks(@AuthenticationPrincipal Long userId,
+                                         @RequestBody BookDeleteRequest bookDeleteRequest) {
+
+        bookService.deleteBooks(userId, bookDeleteRequest);
+
+        return ApiResponse.success("도서 목록 삭제 성공");
     }
 
 }

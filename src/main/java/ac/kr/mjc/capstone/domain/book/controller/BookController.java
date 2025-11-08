@@ -3,6 +3,7 @@ package ac.kr.mjc.capstone.domain.book.controller;
 import ac.kr.mjc.capstone.domain.book.dto.BookListResponse;
 import ac.kr.mjc.capstone.domain.book.dto.BookRequest;
 import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
+import ac.kr.mjc.capstone.domain.book.dto.BookUpdateRequest;
 import ac.kr.mjc.capstone.domain.book.service.inf.BookService;
 import ac.kr.mjc.capstone.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,6 +48,17 @@ public class BookController {
     public ResponseEntity<ApiResponse<List<BookListResponse>>> getAllMyBook(@AuthenticationPrincipal Long userId) {
         ApiResponse<List<BookListResponse>> bookListResponse = bookService.getAllMyBook(userId);
         return ResponseEntity.status(200).body(bookListResponse);
+    }
+
+    @PutMapping("/{bookId}")
+    @Operation(summary = "도서 정보 수정", description = "도서 정보를 수정합니다")
+    public ApiResponse<BookResponse> updateBook(@AuthenticationPrincipal Long userId,
+                                                @PathVariable("bookId") Long bookId,
+                                                @Valid @RequestBody BookUpdateRequest request){
+
+        BookResponse bookResponse = bookService.updateBook(userId, bookId, request);
+        return ApiResponse.success("도서 정보 수정 성공", bookResponse);
+
     }
 
 }

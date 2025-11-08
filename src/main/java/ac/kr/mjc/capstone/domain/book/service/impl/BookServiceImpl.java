@@ -1,9 +1,6 @@
 package ac.kr.mjc.capstone.domain.book.service.impl;
 
-import ac.kr.mjc.capstone.domain.book.dto.BookDetailsRequest;
-import ac.kr.mjc.capstone.domain.book.dto.BookListResponse;
-import ac.kr.mjc.capstone.domain.book.dto.BookRequest;
-import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
+import ac.kr.mjc.capstone.domain.book.dto.*;
 import ac.kr.mjc.capstone.domain.book.entity.*;
 import ac.kr.mjc.capstone.domain.book.repository.BookDetailsRepository;
 import ac.kr.mjc.capstone.domain.book.repository.BookRepository;
@@ -21,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -107,10 +107,47 @@ public class BookServiceImpl implements BookService {
         return ApiResponse.success("사용자 도서 목록 조회 성공", bookListResponse);
     }
 
+    @Override
+    public BookResponse updateBook(Long userId, Long bookId, BookUpdateRequest bookRequest){
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOOK_NOT_FOUND));
+
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!book.getUser().equals(userEntity)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        book.update(
+                bookRequest.getTitle() != null ? bookRequest.getTitle() : book.getTitle(),
+                bookRequest.getAuthor() != null ? bookRequest.getAuthor() : book.getAuthor(),
+                bookRequest.getPublisher() != null ? bookRequest.getPublisher() : book.getPublisher(),
+                bookRequest.getImgUrl() != null ? bookRequest.getImgUrl() : book.getImgUrl()
+        );
+
+        List<BookDetailsUpdateRequest> requestedDetails = bookRequest.getBookDetailsUpdate();
+
+        // 요청 DTO에 상세 정보가 없으면, 기존 상세 정보 모두 삭제
+        if (requestedDetails == null || requestedDetails.isEmpty()) {
+            bookDetailsRepository.deleteAll(book.getBookDetails());
+            book.getBookDetails().clear();
+        } else {
+            updateBookDetailsList(userEntity, book, requestedDetails);
+        }
+
+        return BookResponse.from(book);
+    }
+
     private Reader createReader(UserEntity userEntity, BookDetailsRequest detailRequest) {
         if(detailRequest.getChildId() != null) {
             ChildrenEntity childrenEntity = childrenRepository.findById(detailRequest.getChildId())
                     .orElseThrow(() -> new CustomException(ErrorCode.CHILD_NOT_FOUND));
+
+            if (!childrenEntity.getUserEntity().equals(userEntity)) {
+                throw new CustomException(ErrorCode.UNAUTHORIZED);
+            }
 
             Reader reader = Reader.builder()
                     .userEntity(userEntity)
@@ -140,4 +177,106 @@ public class BookServiceImpl implements BookService {
         }
     }
 
+    private Reader UpdateReader(UserEntity userEntity, BookDetailsUpdateRequest request) {
+
+        Reader reader = null;
+
+        if (request.getReaderId() != null) {
+            reader = readerRepository.findById(request.getReaderId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.READER_NOT_FOUND));
+
+            if (!reader.getUserEntity().equals(userEntity)) {
+                throw new CustomException(ErrorCode.UNAUTHORIZED_READER_OWNERSHIP);
+            }
+
+            if(reader.getReaderType().equals(ReaderType.ADULT)){
+
+                if(request.getChildId() != null){
+                    throw new CustomException(ErrorCode.READER_CHILD_MISMATCH);
+                }
+
+                return reader;
+
+            } else {
+                if(!request.getChildId().equals(reader.getChildrenEntity().getChildId())){
+                    throw new CustomException(ErrorCode.CHILD_ID_MISMATCH);
+                }
+                return reader;
+            }
+        } else {
+            if(request.getChildId() != null) {
+                ChildrenEntity childrenEntity = childrenRepository.findById(request.getChildId())
+                        .orElseThrow(() -> new CustomException(ErrorCode.CHILD_NOT_FOUND));
+
+                readerRepository.findByChildrenEntity_ChildId(request.getChildId())
+                        .ifPresent(reader1 -> {
+                            throw new CustomException(ErrorCode.READER_ALREADY_EXISTS);
+                        });
+
+                if (!childrenEntity.getUserEntity().equals(userEntity)) {
+                    throw new CustomException(ErrorCode.UNAUTHORIZED);
+                }
+
+                reader = Reader.builder()
+                        .userEntity(userEntity)
+                        .childrenEntity(childrenEntity)
+                        .readerType(ReaderType.CHILD)
+                        .build();
+
+                readerRepository.save(reader);
+            }else{
+                throw new CustomException(ErrorCode.CHILD_NOT_FOUND);
+            }
+            return reader;
+        }
+    }
+
+
+    // --- updateBookDetailsList 메서드 수정 ---
+    private void updateBookDetailsList(UserEntity userEntity, Book book, List<BookDetailsUpdateRequest> requestedDetails) {
+
+        Map<Long, BookDetails> existingDetailsMap = book.getBookDetails().stream()
+                .collect(Collectors.toMap(BookDetails::getDetailsId, Function.identity()));
+
+        List<BookDetails> newDetails = new ArrayList<>();
+
+        for (BookDetailsUpdateRequest request : requestedDetails) {
+
+            Reader updateReader = UpdateReader(userEntity, request);
+
+            if (request.getDetailsId() != null && existingDetailsMap.containsKey(request.getDetailsId())) {
+                // 수정
+                BookDetails detailToUpdate = existingDetailsMap.get(request.getDetailsId());
+
+                detailToUpdate.update(
+                        updateReader, // 2) BookDetails 엔티티의 reader 필드(FK)를 독자 B로 변경합니다.
+                        calculateReadingStatus(request.getStartDate(),request.getEndDate()),
+                        request.getStartDate(),
+                        request.getEndDate()
+                );
+
+                existingDetailsMap.remove(request.getDetailsId());
+                newDetails.add(detailToUpdate);
+
+            } else if (request.getDetailsId() == null) {
+                // 추가
+                BookDetails detailToCreate = BookDetails.builder()
+                        .book(book)
+                        .reader(updateReader)
+                        .readingStatus(calculateReadingStatus(request.getStartDate(),request.getEndDate()))
+                        .startDate(request.getStartDate())
+                        .endDate(request.getEndDate())
+                        .build();
+
+                book.getBookDetails().add(detailToCreate);
+                newDetails.add(detailToCreate);
+            }
+        }
+
+        // 삭제
+        existingDetailsMap.values().forEach(detailToDelete -> {
+            bookDetailsRepository.delete(detailToDelete);
+            book.getBookDetails().remove(detailToDelete);
+        });
+    }
 }

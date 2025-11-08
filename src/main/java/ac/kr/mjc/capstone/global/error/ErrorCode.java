@@ -36,9 +36,19 @@ public enum ErrorCode {
 
     // Child
     CHILD_NOT_FOUND("CHILD001", "자녀를 찾을 수 없습니다"),
+    CHILD_ID_MISMATCH("CHILD002", "자녀와 ID가 일치하지 않습니다."),
 
-    //Book
-    BOOK_NOT_FOUND("BOOK001","도서를 찾을 수 없습니다.");
+    // Book
+    BOOK_NOT_FOUND("BOOK001","도서를 찾을 수 없습니다."),
+
+    // BookDetails
+    BOOKDETAILS_NOT_FOUND("BOOKDETAILS001","도서 상세를 찾을 수 없습니다."),
+
+    // Reader
+    READER_NOT_FOUND("READER001","독자를 찾을 수 없습니다."),
+    UNAUTHORIZED_READER_OWNERSHIP("READER002", "reader에 해당 user가 속해있지 않습니다."),
+    READER_CHILD_MISMATCH("READER003","reader와 child가 일치하지 않습니다."),
+    READER_ALREADY_EXISTS("READER003","해당 자녀에 연결된 독자 정보가 이미 존재합니다.");
 
     private final String code;
     private final String message;

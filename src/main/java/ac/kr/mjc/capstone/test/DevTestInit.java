@@ -100,34 +100,20 @@ public class DevTestInit implements CommandLineRunner {
         Reader reader6 = addReader(userEntity2, childrenEntity4, ReaderType.CHILD);
 
         BookDetails bookDetails1 = addBookDetails(book1, reader1, ReadingStatus.TO_READ,
-                LocalDate.of(2026,1,1), LocalDate.of(2026,1,10),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2026,1,1), LocalDate.of(2026,1,10));
         BookDetails bookDetails2 = addBookDetails(book1, reader2, ReadingStatus.READING,
-                LocalDate.of(2025,11,1), LocalDate.of(2026,1,1),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2025,11,1), LocalDate.of(2026,1,1));
         BookDetails bookDetails3 = addBookDetails(book3, reader2, ReadingStatus.COMPLETED,
-                LocalDate.of(2025,9,1), LocalDate.of(2025,10,1),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2025,9,1), LocalDate.of(2025,10,1));
         BookDetails bookDetails4 = addBookDetails(book3, reader3, ReadingStatus.COMPLETED,
-                LocalDate.of(2024,1,1), LocalDate.of(2024,1,4),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2024,1,1), LocalDate.of(2024,1,4));
 
         BookDetails bookDetails5 = addBookDetails(book2, reader4, ReadingStatus.TO_READ,
-                LocalDate.of(2026,1,1), LocalDate.of(2026,2,10),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2026,1,1), LocalDate.of(2026,2,10));
         BookDetails bookDetails6 = addBookDetails(book4, reader5, ReadingStatus.READING,
-                LocalDate.of(2025,11,1), LocalDate.of(2025,12,21),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2025,11,1), LocalDate.of(2025,12,21));
         BookDetails bookDetails7 = addBookDetails(book5, reader6, ReadingStatus.COMPLETED,
-                LocalDate.of(2024,1,1), LocalDate.of(2024,1,7),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2024,1,1), LocalDate.of(2024,1,7));
 
 
     }
@@ -160,15 +146,13 @@ public class DevTestInit implements CommandLineRunner {
     }
 
     public BookDetails addBookDetails(Book book, Reader reader, ReadingStatus readingStatus,
-                                      LocalDate startDate, LocalDate endDate, LocalDateTime createAt, LocalDateTime updateAt){
+                                      LocalDate startDate, LocalDate endDate){
         BookDetails bookDetails = BookDetails.builder()
                 .book(book)
                 .reader(reader)
                 .readingStatus(readingStatus)
                 .startDate(startDate)
                 .endDate(endDate)
-                .createAt(createAt)
-                .updateAt(updateAt)
                 .build();
 
         book.getBookDetails().add(bookDetails);

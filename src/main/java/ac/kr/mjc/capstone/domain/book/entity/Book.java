@@ -36,7 +36,14 @@ public class Book {
     private List<BookDetails> bookDetails = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false) // user_id 컬럼으로 매핑
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+
+    public void update(String title, String author, String publisher, String imgUrl) {
+        this.title = title;
+        this.author = author;
+        this.publisher = publisher;
+        this.imgUrl = imgUrl;
+    }
 
 }

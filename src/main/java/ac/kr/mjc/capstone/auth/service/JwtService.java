@@ -87,4 +87,18 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+    // JwtService.java에 추가
+    public String generateTemporaryToken(Long userId) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + 600000); // 10분
+
+        return Jwts.builder()
+                .subject(String.valueOf(userId))
+                .claim("type", "temporary")
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(getSigningKey())
+                .compact();
+    }
 }

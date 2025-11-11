@@ -2,6 +2,7 @@ package ac.kr.mjc.capstone.auth.service;
 
 import ac.kr.mjc.capstone.auth.dto.LoginRequest;
 import ac.kr.mjc.capstone.auth.dto.TokenResponse;
+import ac.kr.mjc.capstone.auth.dto.VerifyCodeResponse;
 import ac.kr.mjc.capstone.auth.entity.RefreshToken;
 import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
@@ -9,6 +10,7 @@ import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
 import ac.kr.mjc.capstone.global.config.JwtProperties;
 import ac.kr.mjc.capstone.global.error.CustomException;
 import ac.kr.mjc.capstone.global.error.ErrorCode;
+import ac.kr.mjc.capstone.global.util.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -27,6 +30,64 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final JwtProperties jwtProperties;
+    private final EmailService emailService;
+
+    @Transactional
+    public void forgotPassword(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 6자리 인증 코드 생성
+        Random random = new Random();
+        int code = 100000 + random.nextInt(900000);
+        String resetCode = String.valueOf(code);
+
+        // 토큰 및 만료 시간 설정 (1시간)
+        user.setResetToken(resetCode, LocalDateTime.now().plusHours(1));
+        userRepository.save(user);
+
+        // 이메일 발송
+        String emailBody = "비밀번호 재설정을 위한 인증 코드입니다:\n\n" + resetCode +
+                "\n\n이 코드는 1시간 동안 유효합니다.";
+        emailService.sendEmail(user.getEmail(), "비밀번호 재설정 인증 코드", emailBody);
+
+        log.info("Password reset code sent to: {}", email);
+    }
+
+    @Transactional(readOnly = true)
+    public VerifyCodeResponse verifyResetCode(String code) {
+        UserEntity user = userRepository.findByResetToken(code)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_VERIFICATION_CODE));
+
+        if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorCode.EXPIRED_VERIFICATION_CODE);
+        }
+
+        // 임시 토큰 발급
+        String temporaryToken = jwtService.generateTemporaryToken(user.getUserId());
+
+        log.info("Reset code verified for user: {}", user.getEmail());
+
+        return VerifyCodeResponse.builder()
+                .temporaryToken(temporaryToken)
+                .build();
+    }
+
+    @Transactional
+    public void resetPasswordWithToken(Long userId, String newPassword) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 새 비밀번호 암호화 및 저장
+        user.updatePassword(passwordEncoder.encode(newPassword));
+
+        // 재설정 토큰 초기화
+        user.clearResetToken();
+
+        userRepository.save(user);
+
+        log.info("Password reset successfully for user: {}", user.getEmail());
+    }
 
     @Transactional
     public TokenResponse login(LoginRequest request) {

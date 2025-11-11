@@ -5,6 +5,18 @@ spring:
   application:
     name: capstone
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   # Database
   # Docker 환경에서는 'localhost' 대신 'mysql' 서비스 이름 사용 (docker-compose에서 설정)
   datasource:

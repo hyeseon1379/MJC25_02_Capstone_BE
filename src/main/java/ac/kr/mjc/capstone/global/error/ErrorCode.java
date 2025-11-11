@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
     // Common
     INVALID_INPUT_VALUE("C001", "잘못된 입력 값입니다"),
+    INVALID_VERIFICATION_CODE("C400", "유효하지 않은 인증 코드입니다"),
+    EXPIRED_VERIFICATION_CODE("C401", "인증 코드가 만료되었습니다"),
     INTERNAL_SERVER_ERROR("C999", "서버 내부 오류가 발생했습니다"),
 
     // Auth

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user")
@@ -49,6 +50,13 @@ public class UserEntity {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    // 비밀번호 재설정용 필드 추가
+    @Column(name = "reset_token", length = 10)
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
+
     @PrePersist
     public void prePersist() {
         if (this.role == null) {
@@ -65,5 +73,17 @@ public class UserEntity {
         if (phone != null) this.phone = phone;
         if (address != null) this.address = address;
         if (color != null) this.color = color;
+    }
+
+    // 비밀번호 재설정 토큰 설정
+    public void setResetToken(String resetToken, LocalDateTime expiryDate) {
+        this.resetToken = resetToken;
+        this.resetTokenExpiry = expiryDate;
+    }
+
+    // 비밀번호 재설정 토큰 초기화
+    public void clearResetToken() {
+        this.resetToken = null;
+        this.resetTokenExpiry = null;
     }
 }

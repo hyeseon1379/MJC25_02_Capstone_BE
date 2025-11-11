@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -189,6 +190,18 @@ public class BookServiceImpl implements BookService {
        bookRepository.deleteAll(books);;
     }
 
+    @Override
+    public List<BookResponse> searchBooksByCategory(Long userId,BookSearchRequest request) {
+
+        Optional<ReadingStatus> status = Optional.ofNullable(request.getReadingStatus());
+        Optional<Long> readerId = Optional.ofNullable(request.getReaderId());
+
+        List<Book> books = bookRepository.findByReadingStatusAndReader(userId, status, readerId);
+
+        return books.stream()
+                .map(BookResponse::from)
+                .collect(Collectors.toList());
+    }
 
     private Reader createReader(UserEntity userEntity, BookDetailsRequest detailRequest) {
         if(detailRequest.getChildId() != null) {

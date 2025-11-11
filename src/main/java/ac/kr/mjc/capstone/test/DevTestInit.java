@@ -10,6 +10,9 @@ import ac.kr.mjc.capstone.domain.children.repository.ChildrenRepository;
 import ac.kr.mjc.capstone.domain.user.entity.Role;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
+import ac.kr.mjc.capstone.global.media.entity.ImageUsageType;
+import ac.kr.mjc.capstone.global.media.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class DevTestInit implements CommandLineRunner {
@@ -28,6 +33,7 @@ public class DevTestInit implements CommandLineRunner {
     private final ReaderRepository readerRepository;
     private final ChildrenRepository childrenRepository;
     private final BookDetailsRepository bookDetailsRepository;
+    private final FileRepository fileRepository;
 
     @Override
     public void run(String... args) {
@@ -85,11 +91,14 @@ public class DevTestInit implements CommandLineRunner {
                 2, "#000000", "child4.png", ChildGender.F, userEntity2);
 
         // --------도서 정보 ---------
-        Book book1 = addBook(userEntity, "title1", "author1", "publisher1");
-        Book book2 = addBook(userEntity2, "title1", "author1", "publisher1");
-        Book book3 = addBook(userEntity, "title2", "author2", "publisher2");
-        Book book4 = addBook(userEntity2, "title2", "author2", "publisher2");
-        Book book5 = addBook(userEntity2, "title3", "author3", "publisher3");
+        ImageFileEntity image1 = addImageFile(ImageUsageType.BOOK, "book_cover_1.jpg");
+        ImageFileEntity image2 = addImageFile(ImageUsageType.BOOK, "book_cover_2.jpg");
+
+        Book book1 = addBook(userEntity, "title1", "author1", "publisher1", image1);
+        Book book2 = addBook(userEntity2, "title1", "author1", "publisher1", image1);
+        Book book3 = addBook(userEntity, "title2", "author2", "publisher2", image1);
+        Book book4 = addBook(userEntity2, "title2", "author2", "publisher2", image2);
+        Book book5 = addBook(userEntity2, "title3", "author3", "publisher3", image2);
 
         Reader reader1 = addReader(userEntity, null, ReaderType.ADULT);
         Reader reader2 = addReader(userEntity, childrenEntity1, ReaderType.CHILD);
@@ -161,15 +170,27 @@ public class DevTestInit implements CommandLineRunner {
         return bookDetails;
     }
 
-    public Book addBook(UserEntity userEntity, String title, String author, String publisher){
+    public Book addBook(UserEntity userEntity, String title, String author, String publisher,ImageFileEntity imageFile){
         Book book = Book.builder()
                 .user(userEntity)
                 .title(title)
                 .author(author)
                 .publisher(publisher)
+                .image(imageFile)
                 .build();
 
         bookRepository.save(book);
         return book;
+    }
+
+    private ImageFileEntity addImageFile(ImageUsageType usageType, String fileName) {
+        ImageFileEntity imageFile = ImageFileEntity.builder()
+                .fileName(fileName)
+                .filePath(UUID.randomUUID().toString() + ".jpg")//임시 값
+                .usageType(usageType)
+                .build();
+
+        fileRepository.save(imageFile);
+        return imageFile;
     }
 }

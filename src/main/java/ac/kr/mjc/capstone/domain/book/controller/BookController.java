@@ -58,8 +58,8 @@ public class BookController {
 
     }
 
-    @Operation(summary = "도서 삭제", description = "도서를 삭제합니다")
     @DeleteMapping("/{bookId}")
+    @Operation(summary = "도서 삭제", description = "도서를 삭제합니다")
     public ApiResponse<Void> deleteBook(@AuthenticationPrincipal Long userId,
                                         @PathVariable("bookId") Long bookId) {
 
@@ -68,14 +68,25 @@ public class BookController {
         return ApiResponse.success("도서 삭제 성공");
     }
 
-    @Operation(summary = "도서 리스트 삭제", description = "도서 리스트를 삭제합니다")
     @DeleteMapping
+    @Operation(summary = "도서 리스트 삭제", description = "도서 리스트를 삭제합니다")
     public ApiResponse<Void> deleteBooks(@AuthenticationPrincipal Long userId,
                                          @RequestBody BookDeleteRequest bookDeleteRequest) {
 
         bookService.deleteBooks(userId, bookDeleteRequest);
 
         return ApiResponse.success("도서 목록 삭제 성공");
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "도서 카테고리별 조회", description = "도서를 카테고리별로 조회합니다")
+    public ResponseEntity<ApiResponse<List<BookResponse>>> searchBooks(
+            @AuthenticationPrincipal Long userId,
+            @ModelAttribute BookSearchRequest request) {
+
+        List<BookResponse> responseList = bookService.searchBooksByCategory(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
 }

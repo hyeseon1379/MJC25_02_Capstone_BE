@@ -27,7 +27,7 @@ services:
       - capstone
 
   backend:
-    image: jhh0101/capstone:v1.0.3
+    image: jhh0101/capstone:v1.0.5
     container_name: backend_container
     ports:
       # 로컬 PC의 18888 포트 -> 컨테이너의 8082 포트로 연결
@@ -40,8 +40,13 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      
+      # 📧 이메일 설정 추가
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
 
       # DB 접속 URL (Host는 Docker 네트워크 상의 'mysql' 서비스 이름)
+      - MYSQL_URL=jdbc:mysql://mysql:3306/capstone?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/capstone?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
       - SPRING_JPA_HIBERNATE_DDL_AUTO=none # application.yml의 ddl-auto 설정을 따르기 위해 none으로 변경
       - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect # 명시

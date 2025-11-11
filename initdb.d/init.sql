@@ -44,19 +44,23 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- User Table (must be created first as it's referenced by many tables)
 CREATE TABLE `user` (
-    `user_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `email` VARCHAR(255) NOT NULL UNIQUE,
-    `username` VARCHAR(20) NOT NULL,
-    `password` VARCHAR(255) NOT NULL,
-    `birth` DATE NULL,
-    `phone` VARCHAR(20) NULL,
-    `nickname` VARCHAR(20) NULL UNIQUE,
-    `color` VARCHAR(10) NULL,
-    `address` VARCHAR(255) NULL,
-    `profile_img` VARCHAR(255) NULL,
-    `role` ENUM('ADMIN', 'USER') NOT NULL DEFAULT 'USER',
-    PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `user_id` bigint NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `birth` date DEFAULT NULL,
+  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `nickname` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `profile_img` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `role` enum('ADMIN','USER') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',
+  `reset_token` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reset_token_expiry` datetime DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `nickname` (`nickname`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Package Categories Table
 CREATE TABLE `package_categories` (

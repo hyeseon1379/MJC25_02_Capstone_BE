@@ -1,10 +1,10 @@
 package ac.kr.mjc.capstone.auth.service;
 
-import ac.kr.mjc.capstone.auth.dto.LoginRequest;
-import ac.kr.mjc.capstone.auth.dto.TokenResponse;
-import ac.kr.mjc.capstone.auth.dto.VerifyCodeResponse;
+import ac.kr.mjc.capstone.auth.dto.*;
 import ac.kr.mjc.capstone.auth.entity.RefreshToken;
 import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
+import ac.kr.mjc.capstone.domain.user.dto.SignupRequest;
+import ac.kr.mjc.capstone.domain.user.entity.Role;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
 import ac.kr.mjc.capstone.global.config.JwtProperties;
@@ -17,12 +17,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -90,6 +93,45 @@ public class AuthService {
     }
 
     @Transactional
+    public void signup(SignupRequest request) {
+        // 이메일 중복 확인
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+        }
+
+        // 사용자 이름 중복 확인
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new CustomException(ErrorCode.DUPLICATE_USERNAME);
+        }
+
+        // 생년월일 변환
+        LocalDate birthDate = null;
+        if (request.getBirth() != null && !request.getBirth().isEmpty()) {
+            try {
+                birthDate = LocalDate.parse(request.getBirth(), DateTimeFormatter.ISO_LOCAL_DATE);
+            } catch (Exception e) {
+                throw new CustomException(ErrorCode.INVALID_INPUT_VALUE);
+            }
+        }
+
+        // 사용자 생성
+        UserEntity userEntity = UserEntity.builder()
+                .email(request.getEmail())
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .birth(birthDate)
+                .phone(request.getPhone())
+                .nickname(request.getNickname())
+                .color(request.getColor())
+                .address(request.getAddress())
+                .role(Role.USER)
+                .build();
+
+        userRepository.save(userEntity);
+        log.info("User registered: {}", userEntity.getEmail());
+    }
+
+    @Transactional
     public TokenResponse login(LoginRequest request) {
         // 사용자 조회
         UserEntity userEntity = userRepository.findByEmail(request.getEmail())
@@ -112,6 +154,7 @@ public class AuthService {
         return TokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .tokenType("Bearer")
                 .build();
     }
 
@@ -151,7 +194,7 @@ public class AuthService {
         refreshTokenRepository.deleteByUserId(userId);
         log.info("User logged out: userId={}", userId);
     }
-
+    
     private void saveOrUpdateRefreshToken(Long userId, String token) {
         LocalDateTime expiryDate = LocalDateTime.now()
                 .plusSeconds(jwtProperties.getRefreshTokenExpiration() / 1000);

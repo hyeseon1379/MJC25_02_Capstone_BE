@@ -12,6 +12,8 @@ import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
 import ac.kr.mjc.capstone.global.error.CustomException;
 import ac.kr.mjc.capstone.global.error.ErrorCode;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
+import ac.kr.mjc.capstone.global.media.repository.FileRepository;
 import ac.kr.mjc.capstone.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class BookServiceImpl implements BookService {
     private final ReaderRepository readerRepository;
     private final ChildrenRepository childrenRepository;
     private final BookDetailsRepository bookDetailsRepository;
+    private final FileRepository fileRepository;
 
     @Override
     public BookResponse createBook(Long userId, BookRequest bookRequest){
@@ -41,11 +44,14 @@ public class BookServiceImpl implements BookService {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        ImageFileEntity image = fileRepository.findById(bookRequest.getImageId())
+                .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+
         Book book = Book.builder()
                 .title(bookRequest.getTitle())
                 .author(bookRequest.getAuthor())
                 .publisher(bookRequest.getPublisher())
-                .imgUrl(bookRequest.getImgUrl())
+                .image(image)
                 .user(userEntity)
                 .build();
 
@@ -120,11 +126,17 @@ public class BookServiceImpl implements BookService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
+        ImageFileEntity newImage = null;
+        if (bookRequest.getImageId() != null) {
+            newImage = fileRepository.findById(bookRequest.getImageId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+        }
+
         book.update(
                 bookRequest.getTitle() != null ? bookRequest.getTitle() : book.getTitle(),
                 bookRequest.getAuthor() != null ? bookRequest.getAuthor() : book.getAuthor(),
                 bookRequest.getPublisher() != null ? bookRequest.getPublisher() : book.getPublisher(),
-                bookRequest.getImgUrl() != null ? bookRequest.getImgUrl() : book.getImgUrl()
+                newImage != null ? newImage : book.getImage()
         );
 
         List<BookDetailsUpdateRequest> requestedDetails = bookRequest.getBookDetailsUpdate();

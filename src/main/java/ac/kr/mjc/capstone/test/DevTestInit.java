@@ -85,11 +85,11 @@ public class DevTestInit implements CommandLineRunner {
                 2, "#000000", "child4.png", ChildGender.F, userEntity2);
 
         // --------도서 정보 ---------
-        Book book1 = addBook(userEntity, "title1", "author1", "publisher1", "book1.png");
-        Book book2 = addBook(userEntity2, "title1", "author1", "publisher1", "book1.png");
-        Book book3 = addBook(userEntity, "title2", "author2", "publisher2", "book2.png");
-        Book book4 = addBook(userEntity2, "title2", "author2", "publisher2", "book2.png");
-        Book book5 = addBook(userEntity2, "title3", "author3", "publisher3", "book3.png");
+        Book book1 = addBook(userEntity, "title1", "author1", "publisher1");
+        Book book2 = addBook(userEntity2, "title1", "author1", "publisher1");
+        Book book3 = addBook(userEntity, "title2", "author2", "publisher2");
+        Book book4 = addBook(userEntity2, "title2", "author2", "publisher2");
+        Book book5 = addBook(userEntity2, "title3", "author3", "publisher3");
 
         Reader reader1 = addReader(userEntity, null, ReaderType.ADULT);
         Reader reader2 = addReader(userEntity, childrenEntity1, ReaderType.CHILD);
@@ -161,13 +161,12 @@ public class DevTestInit implements CommandLineRunner {
         return bookDetails;
     }
 
-    public Book addBook(UserEntity userEntity, String title, String author, String publisher, String imgUrl){
+    public Book addBook(UserEntity userEntity, String title, String author, String publisher){
         Book book = Book.builder()
                 .user(userEntity)
                 .title(title)
                 .author(author)
                 .publisher(publisher)
-                .imgUrl(imgUrl)
                 .build();
 
         bookRepository.save(book);

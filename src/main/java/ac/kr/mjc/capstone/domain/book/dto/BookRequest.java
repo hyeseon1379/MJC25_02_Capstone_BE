@@ -25,9 +25,8 @@ public class BookRequest {
     @Schema(description = "도서 출판사", example = "마로니에북스")
     private String publisher;
 
-    @Size(max = 500, message = "도서 표지 url은 최대 500자까지 가능합니다")
-    @Schema(description = "도서 표지 url", example = "https://example.com/images/toji-cover.jpg")
-    private String imgUrl;
+    @Schema(description = "도서 표지 ID", example = "1")
+    private Long imageId;
 
     private List<BookDetailsRequest> bookDetails;
 }

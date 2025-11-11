@@ -1,6 +1,7 @@
 package ac.kr.mjc.capstone.domain.book.entity;
 
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,8 +23,9 @@ public class Book {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "img_url")
-    private String imgUrl;
+    @ManyToOne
+    @JoinColumn(name = "image_id")
+    private ImageFileEntity image;
 
     @Column(name = "author")
     private String author;
@@ -39,11 +41,11 @@ public class Book {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    public void update(String title, String author, String publisher, String imgUrl) {
+    public void update(String title, String author, String publisher, ImageFileEntity image) {
         this.title = title;
         this.author = author;
         this.publisher = publisher;
-        this.imgUrl = imgUrl;
+        this.image = image;
     }
 
 }

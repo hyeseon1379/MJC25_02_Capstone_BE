@@ -89,6 +89,14 @@ CREATE TABLE `share_board_image` (
     PRIMARY KEY (`image_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Image Table
+CREATE TABLE `image` (
+       `image_id` BIGINT NOT NULL AUTO_INCREMENT,
+       `file_name` VARCHAR(255) NULL,
+       `file_path` VARCHAR(255) NULL,
+       PRIMARY KEY (`image_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ========================================
 -- First Level Dependencies
 -- ========================================

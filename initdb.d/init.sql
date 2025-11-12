@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `book_details`;
 DROP TABLE IF EXISTS `contest`;
 DROP TABLE IF EXISTS `package`;
 DROP TABLE IF EXISTS `board`;
+DROP TABLE IF EXISTS `notice`;
 DROP TABLE IF EXISTS `Book`;
 DROP TABLE IF EXISTS `reader`;
 DROP TABLE IF EXISTS `children`;
@@ -184,6 +185,22 @@ CREATE TABLE `board` (
     CONSTRAINT `fk_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_board_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Board Table (depends on user and board_image)
+CREATE TABLE `notice` (
+  `notice_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint DEFAULT NULL,
+  `image_id` bigint DEFAULT NULL,
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` varchar(2000) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `create_at` datetime(6) DEFAULT NULL,
+  `update_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`notice_id`),
+  KEY `fk_notice_user` (`user_id`),
+  KEY `fk_notice_image` (`image_id`),
+  CONSTRAINT `fk_notice_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_notice_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================
 -- Second Level Dependencies

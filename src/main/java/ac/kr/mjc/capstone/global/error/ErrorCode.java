@@ -31,6 +31,9 @@ public enum ErrorCode {
     BOARD_NOT_FOUND("BOARD001", "게시글을 찾을 수 없습니다"),
     FORBIDDEN("BOARD002", "권한이 없습니다"),
 
+    // Notice
+    NOTICE_NOT_FOUND("NOTICE001", "공지사항을 찾을 수 없습니다"),
+
     // BoardImage
     IMAGE_NOT_FOUND("IMAGE001", "이미지를 찾을 수 없습니다"),
     IMAGE_UPLOAD_FAILED("IMAGE002", "이미지 업로드에 실패했습니다"),

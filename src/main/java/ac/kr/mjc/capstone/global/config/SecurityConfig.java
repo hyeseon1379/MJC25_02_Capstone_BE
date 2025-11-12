@@ -45,6 +45,8 @@ public class SecurityConfig {
                                 "/api/users/verify",
                                 "/api/users/reset-password"
                         ).permitAll()
+                        // 공지사항 조회는 모든 사용자 허용 (GET 요청)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/notices", "/api/notices/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

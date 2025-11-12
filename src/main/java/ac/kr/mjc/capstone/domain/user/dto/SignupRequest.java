@@ -36,4 +36,6 @@ public class SignupRequest {
 
     @Size(max = 255, message = "주소는 최대 255자까지 가능합니다")
     private String address;
+
+    private String profileImg;
 }

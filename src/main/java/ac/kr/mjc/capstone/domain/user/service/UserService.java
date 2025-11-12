@@ -63,6 +63,7 @@ public class UserService {
                 .nickname(request.getNickname())
                 .color(request.getColor())
                 .address(request.getAddress())
+                .profileImg(request.getProfileImg())
                 .role(Role.USER)
                 .build();
 
@@ -109,7 +110,8 @@ public class UserService {
                 request.getNickname(),
                 request.getPhone(),
                 request.getAddress(),
-                request.getColor()
+                request.getColor(),
+                request.getProfileImg()
         );
 
         UserEntity updatedUser = userRepository.save(userEntity);

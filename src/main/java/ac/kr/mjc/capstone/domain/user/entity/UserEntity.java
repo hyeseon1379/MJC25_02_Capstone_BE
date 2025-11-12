@@ -68,11 +68,12 @@ public class UserEntity {
         this.password = newPassword;
     }
 
-    public void updateProfile(String nickname, String phone, String address, String color) {
+    public void updateProfile(String nickname, String phone, String address, String color, String profileImg) {
         if (nickname != null) this.nickname = nickname;
         if (phone != null) this.phone = phone;
         if (address != null) this.address = address;
         if (color != null) this.color = color;
+        if (profileImg != null) this.profileImg = profileImg;
     }
 
     // 비밀번호 재설정 토큰 설정

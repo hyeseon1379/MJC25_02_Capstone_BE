@@ -39,6 +39,10 @@ public class Reader {
         return readerType == ReaderType.ADULT ? userEntity.getProfileImg() : childrenEntity.getProfileImg();
     }
 
+    public String getColor(){
+        return readerType == ReaderType.ADULT ? userEntity.getColor() : childrenEntity.getColor();
+    }
+
     public void update(UserEntity userEntity, ChildrenEntity childrenEntity, ReaderType readerType) {
         this.userEntity = userEntity;
         this.childrenEntity = childrenEntity;

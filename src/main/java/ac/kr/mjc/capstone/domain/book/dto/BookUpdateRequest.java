@@ -10,8 +10,8 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-@Schema(description = "도서 정보 생성 요청")
-public class BookRequest {
+@Schema(description = "도서 정보 수정 요청")
+public class BookUpdateRequest {
     @NotBlank(message = "도서 제목을 입력해주세요")
     @Size(max = 255, message = "도서 제목은 최대 255자까지 가능합니다")
     @Schema(description = "도서 제목", example = "토지")
@@ -28,5 +28,5 @@ public class BookRequest {
     @Schema(description = "도서 표지 ID", example = "1")
     private Long imageId;
 
-    private List<BookDetailsRequest> bookDetails;
+    private List<BookDetailsUpdateRequest> bookDetailsUpdate;
 }

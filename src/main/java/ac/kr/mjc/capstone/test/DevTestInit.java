@@ -10,6 +10,9 @@ import ac.kr.mjc.capstone.domain.children.repository.ChildrenRepository;
 import ac.kr.mjc.capstone.domain.user.entity.Role;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
+import ac.kr.mjc.capstone.global.media.entity.ImageUsageType;
+import ac.kr.mjc.capstone.global.media.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class DevTestInit implements CommandLineRunner {
@@ -28,6 +33,7 @@ public class DevTestInit implements CommandLineRunner {
     private final ReaderRepository readerRepository;
     private final ChildrenRepository childrenRepository;
     private final BookDetailsRepository bookDetailsRepository;
+    private final FileRepository fileRepository;
 
     @Override
     public void run(String... args) {
@@ -85,11 +91,14 @@ public class DevTestInit implements CommandLineRunner {
                 2, "#000000", "child4.png", ChildGender.F, userEntity2);
 
         // --------도서 정보 ---------
-        Book book1 = addBook(userEntity, "title1", "author1", "publisher1", "book1.png");
-        Book book2 = addBook(userEntity2, "title1", "author1", "publisher1", "book1.png");
-        Book book3 = addBook(userEntity, "title2", "author2", "publisher2", "book2.png");
-        Book book4 = addBook(userEntity2, "title2", "author2", "publisher2", "book2.png");
-        Book book5 = addBook(userEntity2, "title3", "author3", "publisher3", "book3.png");
+        ImageFileEntity image1 = addImageFile(ImageUsageType.BOOK, "book_cover_1.jpg");
+        ImageFileEntity image2 = addImageFile(ImageUsageType.BOOK, "book_cover_2.jpg");
+
+        Book book1 = addBook(userEntity, "title1", "author1", "publisher1", image1);
+        Book book2 = addBook(userEntity2, "title1", "author1", "publisher1", image1);
+        Book book3 = addBook(userEntity, "title2", "author2", "publisher2", image1);
+        Book book4 = addBook(userEntity2, "title2", "author2", "publisher2", image2);
+        Book book5 = addBook(userEntity2, "title3", "author3", "publisher3", image2);
 
         Reader reader1 = addReader(userEntity, null, ReaderType.ADULT);
         Reader reader2 = addReader(userEntity, childrenEntity1, ReaderType.CHILD);
@@ -100,34 +109,20 @@ public class DevTestInit implements CommandLineRunner {
         Reader reader6 = addReader(userEntity2, childrenEntity4, ReaderType.CHILD);
 
         BookDetails bookDetails1 = addBookDetails(book1, reader1, ReadingStatus.TO_READ,
-                LocalDate.of(2026,1,1), LocalDate.of(2026,1,10),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2026,1,1), LocalDate.of(2026,1,10));
         BookDetails bookDetails2 = addBookDetails(book1, reader2, ReadingStatus.READING,
-                LocalDate.of(2025,11,1), LocalDate.of(2026,1,1),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2025,11,1), LocalDate.of(2026,1,1));
         BookDetails bookDetails3 = addBookDetails(book3, reader2, ReadingStatus.COMPLETED,
-                LocalDate.of(2025,9,1), LocalDate.of(2025,10,1),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2025,9,1), LocalDate.of(2025,10,1));
         BookDetails bookDetails4 = addBookDetails(book3, reader3, ReadingStatus.COMPLETED,
-                LocalDate.of(2024,1,1), LocalDate.of(2024,1,4),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2024,1,1), LocalDate.of(2024,1,4));
 
         BookDetails bookDetails5 = addBookDetails(book2, reader4, ReadingStatus.TO_READ,
-                LocalDate.of(2026,1,1), LocalDate.of(2026,2,10),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2026,1,1), LocalDate.of(2026,2,10));
         BookDetails bookDetails6 = addBookDetails(book4, reader5, ReadingStatus.READING,
-                LocalDate.of(2025,11,1), LocalDate.of(2025,12,21),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2025,11,1), LocalDate.of(2025,12,21));
         BookDetails bookDetails7 = addBookDetails(book5, reader6, ReadingStatus.COMPLETED,
-                LocalDate.of(2024,1,1), LocalDate.of(2024,1,7),
-                LocalDateTime.of(2025, 11, 4, 12, 0,0)
-                , LocalDateTime.of(2025, 11, 5, 12, 0,0));
+                LocalDate.of(2024,1,1), LocalDate.of(2024,1,7));
 
 
     }
@@ -160,15 +155,13 @@ public class DevTestInit implements CommandLineRunner {
     }
 
     public BookDetails addBookDetails(Book book, Reader reader, ReadingStatus readingStatus,
-                                      LocalDate startDate, LocalDate endDate, LocalDateTime createAt, LocalDateTime updateAt){
+                                      LocalDate startDate, LocalDate endDate){
         BookDetails bookDetails = BookDetails.builder()
                 .book(book)
                 .reader(reader)
                 .readingStatus(readingStatus)
                 .startDate(startDate)
                 .endDate(endDate)
-                .createAt(createAt)
-                .updateAt(updateAt)
                 .build();
 
         book.getBookDetails().add(bookDetails);
@@ -177,16 +170,27 @@ public class DevTestInit implements CommandLineRunner {
         return bookDetails;
     }
 
-    public Book addBook(UserEntity userEntity, String title, String author, String publisher, String imgUrl){
+    public Book addBook(UserEntity userEntity, String title, String author, String publisher,ImageFileEntity imageFile){
         Book book = Book.builder()
                 .user(userEntity)
                 .title(title)
                 .author(author)
                 .publisher(publisher)
-                .imgUrl(imgUrl)
+                .image(imageFile)
                 .build();
 
         bookRepository.save(book);
         return book;
+    }
+
+    private ImageFileEntity addImageFile(ImageUsageType usageType, String fileName) {
+        ImageFileEntity imageFile = ImageFileEntity.builder()
+                .fileName(fileName)
+                .filePath(UUID.randomUUID().toString() + ".jpg")//임시 값
+                .usageType(usageType)
+                .build();
+
+        fileRepository.save(imageFile);
+        return imageFile;
     }
 }

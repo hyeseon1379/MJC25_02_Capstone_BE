@@ -1,5 +1,6 @@
 package ac.kr.mjc.capstone.domain.book.entity;
 
+import ac.kr.mjc.capstone.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookDetails {
+public class BookDetails extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "details_id")
@@ -38,11 +39,10 @@ public class BookDetails {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @CreationTimestamp
-    @Column(name = "create_at")
-    private LocalDateTime createAt;
-
-    @UpdateTimestamp
-    @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    public void update(Reader reader, ReadingStatus readingStatus, LocalDate startDate, LocalDate endDate) {
+        this.reader = reader;
+        this.readingStatus = readingStatus;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 }

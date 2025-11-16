@@ -1,11 +1,10 @@
 package ac.kr.mjc.capstone.domain.book.dto;
 
 import ac.kr.mjc.capstone.domain.book.entity.Book;
+import ac.kr.mjc.capstone.global.media.dto.ImageFileResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -23,8 +22,7 @@ public class BookListResponse {
     @Schema(description = "도서 출판사", example = "마로니에북스")
     private String publisher;
 
-    @Schema(description = "도서 표지 url", example = "https://example.com/images/toji-cover.jpg")
-    private String imgUrl;
+    private ImageFileResponse image;
 
     public static BookListResponse from(Book book) {
         return BookListResponse.builder()
@@ -32,7 +30,7 @@ public class BookListResponse {
                 .title(book.getTitle())
                 .author(book.getAuthor())
                 .publisher(book.getPublisher())
-                .imgUrl(book.getImgUrl())
+                .image(ImageFileResponse.from(book.getImage()))
                 .build();
     }
 }

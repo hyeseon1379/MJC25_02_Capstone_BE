@@ -5,6 +5,8 @@ import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "reader")
 @Getter
@@ -36,4 +38,11 @@ public class Reader {
     public String getProfileImageUrl() {
         return readerType == ReaderType.ADULT ? userEntity.getProfileImg() : childrenEntity.getProfileImg();
     }
+
+    public void update(UserEntity userEntity, ChildrenEntity childrenEntity, ReaderType readerType) {
+        this.userEntity = userEntity;
+        this.childrenEntity = childrenEntity;
+        this.readerType = readerType;
+    }
+
 }

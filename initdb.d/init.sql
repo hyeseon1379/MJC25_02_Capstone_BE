@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `book_details`;
 DROP TABLE IF EXISTS `contest`;
 DROP TABLE IF EXISTS `package`;
 DROP TABLE IF EXISTS `board`;
+DROP TABLE IF EXISTS `notice`;
 DROP TABLE IF EXISTS `Book`;
 DROP TABLE IF EXISTS `reader`;
 DROP TABLE IF EXISTS `children`;
@@ -44,19 +45,23 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- User Table (must be created first as it's referenced by many tables)
 CREATE TABLE `user` (
-    `user_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `email` VARCHAR(255) NOT NULL UNIQUE,
-    `username` VARCHAR(20) NOT NULL,
-    `password` VARCHAR(255) NOT NULL,
-    `birth` DATE NULL,
-    `phone` VARCHAR(20) NULL,
-    `nickname` VARCHAR(20) NULL UNIQUE,
-    `color` VARCHAR(10) NULL,
-    `address` VARCHAR(255) NULL,
-    `profile_img` VARCHAR(255) NULL,
-    `role` ENUM('ADMIN', 'USER') NOT NULL DEFAULT 'USER',
-    PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `user_id` bigint NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `birth` date DEFAULT NULL,
+  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `nickname` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `color` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `profile_img` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `role` enum('ADMIN','USER') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',
+  `reset_token` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reset_token_expiry` datetime DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `nickname` (`nickname`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Package Categories Table
 CREATE TABLE `package_categories` (
@@ -180,6 +185,22 @@ CREATE TABLE `board` (
     CONSTRAINT `fk_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_board_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Board Table (depends on user and board_image)
+CREATE TABLE `notice` (
+  `notice_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint DEFAULT NULL,
+  `image_id` bigint DEFAULT NULL,
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` varchar(2000) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `create_at` datetime(6) DEFAULT NULL,
+  `update_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`notice_id`),
+  KEY `fk_notice_user` (`user_id`),
+  KEY `fk_notice_image` (`image_id`),
+  CONSTRAINT `fk_notice_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_notice_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================
 -- Second Level Dependencies

@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
     // Common
     INVALID_INPUT_VALUE("C001", "잘못된 입력 값입니다"),
+    INVALID_VERIFICATION_CODE("C400", "유효하지 않은 인증 코드입니다"),
+    EXPIRED_VERIFICATION_CODE("C401", "인증 코드가 만료되었습니다"),
     INTERNAL_SERVER_ERROR("C999", "서버 내부 오류가 발생했습니다"),
 
     // Auth
@@ -28,6 +30,12 @@ public enum ErrorCode {
     // Board
     BOARD_NOT_FOUND("BOARD001", "게시글을 찾을 수 없습니다"),
     FORBIDDEN("BOARD002", "권한이 없습니다"),
+
+    // Reply
+    REPLY_NOT_FOUND("REPLY001", "댓글을 찾을 수 없습니다"),
+
+    // Notice
+    NOTICE_NOT_FOUND("NOTICE001", "공지사항을 찾을 수 없습니다"),
 
     // BoardImage
     IMAGE_NOT_FOUND("IMAGE001", "이미지를 찾을 수 없습니다"),

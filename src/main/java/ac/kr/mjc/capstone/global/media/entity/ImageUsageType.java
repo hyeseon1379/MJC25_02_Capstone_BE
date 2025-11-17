@@ -4,7 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum ImageUsageType {
-    BOOK("book");
+    BOOK("book"),
+    CONTEST("contest"),
+    CONTEST_RESULT("contest_result");
 
     private final String directory;
 

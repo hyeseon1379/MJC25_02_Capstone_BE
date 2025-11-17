@@ -32,6 +32,7 @@ DROP TABLE IF EXISTS `challenge`;
 DROP TABLE IF EXISTS `package_categories`;
 DROP TABLE IF EXISTS `share_board_image`;
 DROP TABLE IF EXISTS `board_image`;
+DROP TABLE IF EXISTS `image`;
 DROP TABLE IF EXISTS `book_category`;
 DROP TABLE IF EXISTS `refresh_token`;
 DROP TABLE IF EXISTS `user`;

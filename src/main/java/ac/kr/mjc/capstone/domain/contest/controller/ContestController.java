@@ -1,5 +1,7 @@
 package ac.kr.mjc.capstone.domain.contest.controller;
 
+import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsRequest;
+import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsResponse;
 import ac.kr.mjc.capstone.domain.contest.dto.ContestRequest;
 import ac.kr.mjc.capstone.domain.contest.dto.ContestResponse;
 import ac.kr.mjc.capstone.domain.contest.service.inf.ContestService;
@@ -44,5 +46,12 @@ public class ContestController {
     public ResponseEntity<ApiResponse<ContestResponse>> getContest(@PathVariable("contestId") Long contestId) {
         ApiResponse<ContestResponse> contestResponse = contestService.getContest(contestId);
         return ResponseEntity.status(200).body(contestResponse);
+    }
+
+    @PostMapping("/detail")
+    @Operation(summary = "대회 상세 정보 생성", description = "대회 상세 정보를 생성합니다")
+    public ResponseEntity<ApiResponse<ContestDetailsResponse>> createContestDetails(@Valid @RequestBody ContestDetailsRequest request){
+        ApiResponse<ContestDetailsResponse> response = contestService.createContestDetails(request);
+        return ResponseEntity.status(201).body(response);
     }
 }

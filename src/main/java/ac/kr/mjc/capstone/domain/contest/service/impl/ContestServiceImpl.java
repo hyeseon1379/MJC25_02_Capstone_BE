@@ -1,9 +1,13 @@
 package ac.kr.mjc.capstone.domain.contest.service.impl;
 
+import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsRequest;
+import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsResponse;
 import ac.kr.mjc.capstone.domain.contest.dto.ContestRequest;
 import ac.kr.mjc.capstone.domain.contest.dto.ContestResponse;
 import ac.kr.mjc.capstone.domain.contest.entity.Contest;
+import ac.kr.mjc.capstone.domain.contest.entity.ContestDetails;
 import ac.kr.mjc.capstone.domain.contest.entity.ProgressStatus;
+import ac.kr.mjc.capstone.domain.contest.repository.ContestDetailsRepository;
 import ac.kr.mjc.capstone.domain.contest.repository.ContestRepository;
 import ac.kr.mjc.capstone.domain.contest.service.inf.ContestService;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
@@ -25,6 +29,7 @@ import java.util.List;
 @Transactional
 public class ContestServiceImpl implements ContestService {
     private final ContestRepository contestRepository;
+    private final ContestDetailsRepository contestDetailsRepository;
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
 
@@ -69,6 +74,25 @@ public class ContestServiceImpl implements ContestService {
         return ApiResponse.success(contestResponse);
     }
 
+    @Override
+    public ApiResponse<ContestDetailsResponse> createContestDetails(ContestDetailsRequest contestDetailsRequest){
+        Contest contest = contestRepository.findById(contestDetailsRequest.getContentId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
+
+        ContestDetails details = ContestDetails.builder()
+                .startPrompt(contestDetailsRequest.getStartPrompt())
+                .contest(contest)
+                .round(contestDetailsRequest.getRound())
+                .startDate(contestDetailsRequest.getStartDate())
+                .endDate(contestDetailsRequest.getEndDate())
+                .progressStatus(calculateProgressStatus_Details(contestDetailsRequest.getStartDate(), contestDetailsRequest.getEndDate()))
+                .build();
+
+        ContestDetails savedDetails = contestDetailsRepository.save(details);
+        ContestDetailsResponse response = ContestDetailsResponse.from(savedDetails);
+        return ApiResponse.success(response);
+    }
+
     private ProgressStatus calculateProgressStatus(LocalDate startDate, LocalDate endDate) {
         LocalDate today = LocalDate.now();
         if (today.isBefore(startDate)) {
@@ -90,21 +114,19 @@ public class ContestServiceImpl implements ContestService {
         LocalDate votingEndDay = startDate.plusDays(12); //투표 종료
 
         if (today.isAfter(votingEndDay) && !today.isAfter(endDate)) {
-            return ProgressStatus.CANCELLED;
+            return ProgressStatus.COMPLETED; // 집계 중
         }
 
-//        // 6. 투표 단계 (이어쓰기 종료일 다음 날부터 투표 종료일까지)
-//        else if (today.isAfter(writingEndDay) && !today.isAfter(votingEndDay)) {
-//            // 이어쓰기가 끝났고, 아직 투표가 끝나지 않았으면
-//            return ProgressStatus.COMPLETED; // COMPLETED를 투표(VOTING)로 사용한다고 가정
-//        }
+        else if (today.isAfter(writingEndDay) && !today.isAfter(votingEndDay)) {
+            return ProgressStatus.VOTING; // 투표 중
+        }
 
         else if (!today.isAfter(writingEndDay)) {
             return ProgressStatus.ONGOING;
         }
 
         else if (today.isAfter(endDate)) {
-            return ProgressStatus.COMPLETED;
+            return ProgressStatus.CANCELLED; // 투표 집계 완료
         }
 
         return ProgressStatus.ONGOING;

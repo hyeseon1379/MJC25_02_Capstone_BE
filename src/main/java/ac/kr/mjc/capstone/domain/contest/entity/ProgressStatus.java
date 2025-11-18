@@ -15,6 +15,9 @@ public enum ProgressStatus {
     @JsonProperty("completed")
     COMPLETED("진행 완료"),
 
+    @JsonProperty("VOTING")
+    VOTING("투표 중"),
+
     @JsonProperty("cancelled")
     CANCELLED("진행 마감");
 

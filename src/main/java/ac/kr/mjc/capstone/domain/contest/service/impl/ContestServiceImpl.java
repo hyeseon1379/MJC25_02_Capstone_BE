@@ -1,8 +1,5 @@
 package ac.kr.mjc.capstone.domain.contest.service.impl;
 
-import ac.kr.mjc.capstone.domain.book.dto.BookDetailsUpdateRequest;
-import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
-import ac.kr.mjc.capstone.domain.book.entity.Book;
 import ac.kr.mjc.capstone.domain.contest.dto.*;
 import ac.kr.mjc.capstone.domain.contest.entity.Contest;
 import ac.kr.mjc.capstone.domain.contest.entity.ContestDetails;
@@ -106,6 +103,44 @@ public class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public ApiResponse<Void> deleteContest(Long userId, Long contestId){
+        Contest contest = contestRepository.findById(contestId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
+
+        if(!contest.getUser().getUserId().equals(userId)){
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        contestRepository.delete(contest);
+        return ApiResponse.success();
+    }
+
+    @Override
+    public ApiResponse<Void> deleteContests(Long userId, ContestDeleteRequest contestDeleteRequest){
+        List<Long> contestIds = contestDeleteRequest.getContestIds();
+
+        if (contestIds == null || contestIds.isEmpty()) {
+            throw new CustomException(ErrorCode.BOOK_NOT_FOUND);
+        }
+
+        List<Contest> contests = contestRepository.findAllById(contestIds);
+
+        if (contests.size() != contestIds.size()) {
+            throw new CustomException(ErrorCode.BOOK_NOT_FOUND, "요청된 도서 중 존재하지 않는 ID가 포함되어 있습니다.");
+        }
+
+        boolean allOwned = contests.stream()
+                .allMatch(contest -> contest.getUser().getUserId().equals(userId));
+
+        if (!allOwned) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "삭제 권한이 없는 도서가 목록에 포함되어 있습니다.");
+        }
+
+        contestRepository.deleteAll(contests);
+        return ApiResponse.success();
+    }
+
+    @Override
     public ApiResponse<ContestDetailsResponse> createContestDetails(ContestDetailsRequest contestDetailsRequest){
         Contest contest = contestRepository.findById(contestDetailsRequest.getContentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
@@ -174,6 +209,23 @@ public class ContestServiceImpl implements ContestService {
 
         ContestDetailsResponse response = ContestDetailsResponse.from(details);
         return ApiResponse.success(response);
+    }
+
+
+    @Override
+    public ApiResponse<Void> deleteContestDetails(Long userId, Long contestId, Long contestDetailsId){
+        Contest contest = contestRepository.findById(contestId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
+
+        ContestDetails details = contestDetailsRepository.findById(contestDetailsId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_DETAILS_NOT_FOUND));
+
+        if(!contest.getUser().getUserId().equals(userId)){
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        contestDetailsRepository.delete(details);
+        return ApiResponse.success();
     }
 
     private ProgressStatus calculateProgressStatus(LocalDate startDate, LocalDate endDate) {

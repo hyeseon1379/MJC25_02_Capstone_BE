@@ -1,7 +1,5 @@
 package ac.kr.mjc.capstone.domain.contest.controller;
 
-import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
-import ac.kr.mjc.capstone.domain.book.dto.BookUpdateRequest;
 import ac.kr.mjc.capstone.domain.contest.dto.*;
 import ac.kr.mjc.capstone.domain.contest.service.inf.ContestService;
 import ac.kr.mjc.capstone.global.response.ApiResponse;
@@ -57,6 +55,26 @@ public class ContestController {
         return ResponseEntity.status(200).body(contestResponse);
     }
 
+    @DeleteMapping("/{contestId}")
+    @Operation(summary = "대회 삭제", description = "대회를 삭제합니다")
+    public ApiResponse<Void> deleteContest(@AuthenticationPrincipal Long userId,
+                                        @PathVariable("contestId") Long contestId) {
+
+        contestService.deleteContest(userId, contestId);
+
+        return ApiResponse.success("대회 삭제 성공");
+    }
+
+    @DeleteMapping
+    @Operation(summary = "대회 리스트 삭제", description = "대회 리스트를 삭제합니다")
+    public ApiResponse<Void> deleteContests(@AuthenticationPrincipal Long userId,
+                                         @RequestBody ContestDeleteRequest request) {
+
+        contestService.deleteContests(userId, request);
+
+        return ApiResponse.success("대회 목록 삭제 성공");
+    }
+
     @PostMapping("/detail")
     @Operation(summary = "대회 상세 정보 생성", description = "대회 상세 정보를 생성합니다")
     public ResponseEntity<ApiResponse<ContestDetailsResponse>> createContestDetails(@Valid @RequestBody ContestDetailsRequest request){
@@ -88,5 +106,16 @@ public class ContestController {
 
         ApiResponse<ContestDetailsResponse> response = contestService.updateContestDetails(userId, contestId, contestDetailsId, request);
         return ResponseEntity.status(200).body(response);
+    }
+
+    @DeleteMapping("/detail/{contestId}/{contestDetailsId}")
+    @Operation(summary = "대회 상세 삭제", description = "대회 상세를 삭제합니다")
+    public ApiResponse<Void> deleteContestDetails(@AuthenticationPrincipal Long userId,
+                                                  @PathVariable("contestId") Long contestId,
+                                                  @PathVariable("contestDetailsId") Long contestDetailsId) {
+
+        contestService.deleteContestDetails(userId, contestId, contestDetailsId);
+
+        return ApiResponse.success("대회 상세 삭제 성공");
     }
 }

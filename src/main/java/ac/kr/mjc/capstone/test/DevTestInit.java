@@ -8,7 +8,9 @@ import ac.kr.mjc.capstone.domain.children.entity.ChildGender;
 import ac.kr.mjc.capstone.domain.children.entity.ChildrenEntity;
 import ac.kr.mjc.capstone.domain.children.repository.ChildrenRepository;
 import ac.kr.mjc.capstone.domain.contest.entity.Contest;
+import ac.kr.mjc.capstone.domain.contest.entity.ContestDetails;
 import ac.kr.mjc.capstone.domain.contest.entity.ProgressStatus;
+import ac.kr.mjc.capstone.domain.contest.entity.Round;
 import ac.kr.mjc.capstone.domain.contest.repository.ContestDetailsRepository;
 import ac.kr.mjc.capstone.domain.contest.repository.ContestRepository;
 import ac.kr.mjc.capstone.domain.user.entity.Role;
@@ -154,10 +156,18 @@ public class DevTestInit implements CommandLineRunner {
         Contest contest2 = addContest("대회 제목 2","대회 설명 2", LocalDate.of(2025,11,1), LocalDate.of(2026,1,1),
                 image3, admin, ProgressStatus.ONGOING);
         Contest contest3 = addContest("대회 제목 3","대회 설명 3", LocalDate.of(2025,1,1), LocalDate.of(2025,3,1),
-                image3, admin, ProgressStatus.COMPLETED);
+                image3, admin, ProgressStatus.ONGOING);
         Contest contest4 = addContest("대회 제목 4","대회 설명 4", LocalDate.of(2024,1,1), LocalDate.of(2024,3,1),
-                image3, admin, ProgressStatus.CANCELLED);
+                image3, admin, ProgressStatus.COMPLETED);
 
+        ContestDetails contestDetails1 = addContestDetails("시작 문구1", Round.ROUND_1, contest1,
+                LocalDate.of(2026,1,1), LocalDate.of(2025,1,14),ProgressStatus.PLANNED);
+        ContestDetails contestDetails2 = addContestDetails("시작 문구2", Round.ROUND_2, contest1,
+                LocalDate.of(2026,1,15), LocalDate.of(2025,1,29),ProgressStatus.ONGOING);
+        ContestDetails contestDetails3 = addContestDetails("시작 문구3", Round.ROUND_3, contest1,
+                LocalDate.of(2026,1,30), LocalDate.of(2025,2,13),ProgressStatus.COMPLETED);
+        ContestDetails contestDetails4 = addContestDetails("시작 문구4", Round.FINAL, contest1,
+                LocalDate.of(2026,2,14), LocalDate.of(2025,2,28),ProgressStatus.VOTING);
 
     }
 
@@ -244,6 +254,19 @@ public class DevTestInit implements CommandLineRunner {
         return contest;
     }
 
+    private ContestDetails addContestDetails(String startPrompt, Round round, Contest contest, LocalDate startDate, LocalDate endDate, ProgressStatus progressStatus){
 
+        ContestDetails contestDetails = ContestDetails.builder()
+                .startPrompt(startPrompt)
+                .round(round)
+                .contest(contest)
+                .startDate(startDate)
+                .endDate(endDate)
+                .progressStatus(progressStatus)
+                .build();
+
+        contestDetailsRepository.save(contestDetails);
+        return contestDetails;
+    }
 
 }

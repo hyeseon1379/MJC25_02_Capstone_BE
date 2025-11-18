@@ -11,6 +11,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -53,8 +57,8 @@ public class ReplyController {
             description = "모든 사용자가 특정 게시글의 댓글을 조회할 수 있습니다. (인증 불필요)"
     )
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ReplyResponse>>> getReplies(@PathVariable Long boardId) {
-        List<ReplyResponse> responses = replyService.getRepliesByBoardId(boardId);
+    public ResponseEntity<ApiResponse<Page<ReplyResponse>>> getReplies(@PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable, @PathVariable Long boardId) {
+        Page<ReplyResponse> responses = replyService.getRepliesByBoardId(boardId, pageable);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

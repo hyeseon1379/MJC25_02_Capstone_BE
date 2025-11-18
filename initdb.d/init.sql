@@ -55,7 +55,7 @@ CREATE TABLE `user` (
   `nickname` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `color` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `profile_img` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `profile_img` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `role` enum('ADMIN','USER') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',
   `reset_token` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `reset_token_expiry` datetime DEFAULT NULL,

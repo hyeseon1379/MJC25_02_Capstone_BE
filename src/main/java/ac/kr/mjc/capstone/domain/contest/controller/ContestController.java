@@ -2,10 +2,7 @@ package ac.kr.mjc.capstone.domain.contest.controller;
 
 import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
 import ac.kr.mjc.capstone.domain.book.dto.BookUpdateRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsResponse;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestResponse;
+import ac.kr.mjc.capstone.domain.contest.dto.*;
 import ac.kr.mjc.capstone.domain.contest.service.inf.ContestService;
 import ac.kr.mjc.capstone.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,7 +55,6 @@ public class ContestController {
 
         ApiResponse<ContestResponse> contestResponse = contestService.updateContest(userId, contestId, request);
         return ResponseEntity.status(200).body(contestResponse);
-
     }
 
     @PostMapping("/detail")
@@ -80,6 +76,17 @@ public class ContestController {
     public ResponseEntity<ApiResponse<ContestDetailsResponse>> getContestDetails(@PathVariable("contestId") Long contestId,
                                                                                  @PathVariable("contestDetailsId") Long contestDetailsId) {
         ApiResponse<ContestDetailsResponse> response = contestService.getContestDetails(contestId, contestDetailsId);
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @PutMapping("/detail/{contestId}/{contestDetailsId}")
+    @Operation(summary = "대회 상세 정보 수정", description = "대회 상세 정보를 수정합니다")
+    public ResponseEntity<ApiResponse<ContestDetailsResponse>> updateContestDetails(@AuthenticationPrincipal Long userId,
+                                                                      @PathVariable("contestId") Long contestId,
+                                                                      @PathVariable("contestDetailsId") Long contestDetailsId,
+                                                                      @Valid @RequestBody ContestDetailsUpdateRequest request){
+
+        ApiResponse<ContestDetailsResponse> response = contestService.updateContestDetails(userId, contestId, contestDetailsId, request);
         return ResponseEntity.status(200).body(response);
     }
 }

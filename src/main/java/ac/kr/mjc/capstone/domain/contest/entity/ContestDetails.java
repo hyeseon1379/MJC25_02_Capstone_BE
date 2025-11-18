@@ -37,4 +37,12 @@ public class ContestDetails {
     @Enumerated(EnumType.STRING)
     private ProgressStatus progressStatus;
 
+    public void update(String startPrompt, Round round, LocalDate startDate, LocalDate endDate, ProgressStatus progressStatus) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.startPrompt = startPrompt;
+        this.round = round;
+        this.progressStatus = progressStatus;
+    }
+
 }

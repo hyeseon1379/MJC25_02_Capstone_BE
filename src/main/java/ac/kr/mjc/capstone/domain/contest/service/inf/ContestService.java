@@ -1,9 +1,6 @@
 package ac.kr.mjc.capstone.domain.contest.service.inf;
 
-import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsResponse;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestResponse;
+import ac.kr.mjc.capstone.domain.contest.dto.*;
 import ac.kr.mjc.capstone.global.response.ApiResponse;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -16,5 +13,6 @@ public interface ContestService {
     ApiResponse<ContestResponse> updateContest(Long userId, Long contentId, ContestRequest contestRequest);
     ApiResponse<ContestDetailsResponse> createContestDetails(ContestDetailsRequest contestDetailsRequest);
     ApiResponse<List<ContestDetailsResponse>> getAllContestDetails(Long contestId);
-    ApiResponse<ContestDetailsResponse> getContestDetails(Long contestId,Long contestDetailsId);
+    ApiResponse<ContestDetailsResponse> getContestDetails(Long contestId, Long contestDetailsId);
+    ApiResponse<ContestDetailsResponse> updateContestDetails(Long userId, Long contentId, Long contestDetailsId , ContestDetailsUpdateRequest contestRequest);
 }

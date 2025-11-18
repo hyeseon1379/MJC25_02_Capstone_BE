@@ -3,10 +3,7 @@ package ac.kr.mjc.capstone.domain.contest.service.impl;
 import ac.kr.mjc.capstone.domain.book.dto.BookDetailsUpdateRequest;
 import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
 import ac.kr.mjc.capstone.domain.book.entity.Book;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsResponse;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestResponse;
+import ac.kr.mjc.capstone.domain.contest.dto.*;
 import ac.kr.mjc.capstone.domain.contest.entity.Contest;
 import ac.kr.mjc.capstone.domain.contest.entity.ContestDetails;
 import ac.kr.mjc.capstone.domain.contest.entity.ProgressStatus;
@@ -140,7 +137,7 @@ public class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ApiResponse<ContestDetailsResponse> getContestDetails(Long contestId,Long contestDetailsId){
+    public ApiResponse<ContestDetailsResponse> getContestDetails(Long contestId, Long contestDetailsId){
         Contest contest = contestRepository.findById(contestId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
 
@@ -150,6 +147,33 @@ public class ContestServiceImpl implements ContestService {
         ContestDetailsResponse contestDetailsResponse = ContestDetailsResponse.from(details);
 
         return ApiResponse.success(contestDetailsResponse);
+    }
+
+    @Override
+    public ApiResponse<ContestDetailsResponse> updateContestDetails(Long userId, Long contentId, Long contestDetailsId, ContestDetailsUpdateRequest request){
+        Contest contest = contestRepository.findById(contentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
+
+        ContestDetails details = contestDetailsRepository.findById(contestDetailsId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_DETAILS_NOT_FOUND));
+
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if(!contest.getUser().equals(userEntity)){
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        details.update(
+                request.getStartPrompt() != null ? request.getStartPrompt() : details.getStartPrompt(),
+                request.getRound() != null ? request.getRound() : details.getRound(),
+                request.getStartDate() != null ? request.getStartDate() : details.getStartDate(),
+                request.getEndDate() != null ? request.getEndDate() : details.getEndDate(),
+                calculateProgressStatus_Details(request.getStartDate(), request.getEndDate())
+        );
+
+        ContestDetailsResponse response = ContestDetailsResponse.from(details);
+        return ApiResponse.success(response);
     }
 
     private ProgressStatus calculateProgressStatus(LocalDate startDate, LocalDate endDate) {

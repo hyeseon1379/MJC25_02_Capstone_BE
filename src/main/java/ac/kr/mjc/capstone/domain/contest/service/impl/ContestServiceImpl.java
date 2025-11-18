@@ -1,5 +1,8 @@
 package ac.kr.mjc.capstone.domain.contest.service.impl;
 
+import ac.kr.mjc.capstone.domain.book.dto.BookDetailsUpdateRequest;
+import ac.kr.mjc.capstone.domain.book.dto.BookResponse;
+import ac.kr.mjc.capstone.domain.book.entity.Book;
 import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsRequest;
 import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsResponse;
 import ac.kr.mjc.capstone.domain.contest.dto.ContestRequest;
@@ -75,6 +78,37 @@ public class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public ApiResponse<ContestResponse> updateContest(Long userId, Long contentId, ContestRequest contestRequest){
+        Contest contest = contestRepository.findById(contentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
+
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if(!contest.getUser().equals(userEntity)){
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        ImageFileEntity newImage = null;
+        if (contestRequest.getImageId() != null) {
+            newImage = fileRepository.findById(contestRequest.getImageId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+        }
+
+        contest.update(
+                contestRequest.getTitle() != null ? contestRequest.getTitle() : contest.getTitle(),
+                contestRequest.getContent() != null ? contestRequest.getContent() : contest.getContent(),
+                calculateProgressStatus(contestRequest.getStartDate(), contestRequest.getEndDate()),
+                contestRequest.getStartDate() != null ? contestRequest.getStartDate() : contest.getStartDate(),
+                contestRequest.getEndDate() != null ? contestRequest.getEndDate() : contest.getEndDate(),
+                newImage != null ? newImage : contest.getImage()
+        );
+
+        ContestResponse response = ContestResponse.from(contest);
+        return ApiResponse.success(response);
+    }
+
+    @Override
     public ApiResponse<ContestDetailsResponse> createContestDetails(ContestDetailsRequest contestDetailsRequest){
         Contest contest = contestRepository.findById(contestDetailsRequest.getContentId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
@@ -91,6 +125,31 @@ public class ContestServiceImpl implements ContestService {
         ContestDetails savedDetails = contestDetailsRepository.save(details);
         ContestDetailsResponse response = ContestDetailsResponse.from(savedDetails);
         return ApiResponse.success(response);
+    }
+
+    @Override
+    public ApiResponse<List<ContestDetailsResponse>> getAllContestDetails(Long contestId){
+        Contest contest = contestRepository.findById(contestId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
+
+        List<ContestDetails> contestDetails = contestDetailsRepository.findByContestOrderByStartDateDesc(contest);
+
+        List<ContestDetailsResponse> responses = contestDetails.stream().map(ContestDetailsResponse::from).toList();
+
+        return ApiResponse.success(responses);
+    }
+
+    @Override
+    public ApiResponse<ContestDetailsResponse> getContestDetails(Long contestId,Long contestDetailsId){
+        Contest contest = contestRepository.findById(contestId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_NOT_FOUND));
+
+        ContestDetails details = contestDetailsRepository.findById(contestDetailsId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONTEST_DETAILS_NOT_FOUND));
+
+        ContestDetailsResponse contestDetailsResponse = ContestDetailsResponse.from(details);
+
+        return ApiResponse.success(contestDetailsResponse);
     }
 
     private ProgressStatus calculateProgressStatus(LocalDate startDate, LocalDate endDate) {

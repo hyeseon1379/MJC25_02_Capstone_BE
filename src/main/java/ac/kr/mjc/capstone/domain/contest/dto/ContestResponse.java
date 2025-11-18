@@ -34,8 +34,6 @@ public class ContestResponse {
 
     private ImageFileResponse image;
 
-    private List<ContestDetailsResponse> contestDetails;
-
     public static ContestResponse from(Contest contest) {
         return ContestResponse.builder()
                 .contestId(contest.getContestId())
@@ -45,8 +43,6 @@ public class ContestResponse {
                 .startDate(contest.getStartDate())
                 .endDate(contest.getEndDate())
                 .image(ImageFileResponse.from(contest.getImage()))
-                .contestDetails(contest.getContestDetails().stream()
-                        .map(ContestDetailsResponse::from).collect(Collectors.toList()))
                 .build();
     }
 }

@@ -59,7 +59,11 @@ public enum ErrorCode {
     READER_ALREADY_EXISTS("READER003","해당 자녀에 연결된 독자 정보가 이미 존재합니다."),
 
     //contest
-    CONTEST_NOT_FOUND("CONTEST001","대회를 찾을 수 없습니다.");
+    CONTEST_NOT_FOUND("CONTEST001","대회를 찾을 수 없습니다."),
+
+    //contestDetails
+    CONTEST_DETAILS_NOT_FOUND("CONTEST_DETAILS001","대회 상세를 찾을 수 없습니다.");
+
 
     private final String code;
     private final String message;

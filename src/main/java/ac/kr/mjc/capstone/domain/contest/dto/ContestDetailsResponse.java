@@ -11,6 +11,9 @@ import java.time.LocalDate;
 @Builder
 @Schema(description = "대회 상세 정보 응답")
 public class ContestDetailsResponse {
+    @Schema(description = "대회 ID", example = "1")
+    private Long contestId;
+
     @Schema(description = "대회 상세 ID", example = "1")
     private Long contestDetailsId;
 
@@ -31,6 +34,7 @@ public class ContestDetailsResponse {
 
     public static ContestDetailsResponse from(ContestDetails contestDetails) {
         return ContestDetailsResponse.builder()
+                .contestId(contestDetails.getContest().getContestId())
                 .contestDetailsId(contestDetails.getDetailsId())
                 .round(contestDetails.getRound().getDisplayName())
                 .progressStatus(contestDetails.getProgressStatus().getDisplayName())

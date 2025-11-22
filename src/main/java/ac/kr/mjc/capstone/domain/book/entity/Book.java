@@ -55,15 +55,15 @@ public class Book {
     private UserEntity user;
 
 
-    public void update(String title, String author, String publisher, ImageFileEntity image, String isbn, String publicationYear, String coverUrl, String description) {
+    public void update(String title, String author, String publisher, String isbn, String publicationYear, String coverUrl, String description, ImageFileEntity image) {
         this.title = title;
         this.author = author;
         this.publisher = publisher;
-        this.image = image;
         this.isbn = isbn;
         this.publicationYear = publicationYear;
         this.coverUrl = coverUrl;
         this.description = description;
+        this.image = image;
     }
 
 }

@@ -1,8 +1,8 @@
 package ac.kr.mjc.capstone.domain.board.entity;
 
-import ac.kr.mjc.capstone.domain.boardimage.entity.BoardImageEntity;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.global.base.BaseEntity;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,18 +29,18 @@ public class BoardEntity extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "image_id")
-    private BoardImageEntity boardImage;
+    private ImageFileEntity imageFile;
 
     // 게시글 수정 메서드
-    public void updateBoard(String title, String content, BoardImageEntity boardImage) {
+    public void updateBoard(String title, String content, ImageFileEntity imageFile) {
         if (title != null) {
             this.title = title;
         }
         if (content != null) {
             this.content = content;
         }
-        if (boardImage != null) {
-            this.boardImage = boardImage;
+        if (imageFile != null) {
+            this.imageFile = imageFile;
         }
     }
 }

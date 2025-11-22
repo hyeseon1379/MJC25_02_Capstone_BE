@@ -39,7 +39,7 @@ public class BoardService {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .user(userEntity)
-                .boardImage(request.getBoardImage())
+                .imageFile(request.getImageFile())
                 .build();
 
         BoardEntity savedBoard = boardRepository.save(boardEntity);
@@ -92,7 +92,7 @@ public class BoardService {
         boardEntity.updateBoard(
                 request.getTitle(),
                 request.getContent(),
-                request.getBoardImage()
+                request.getImageFile()
         );
 
         log.info("Board updated: boardId={}, title={}, userId={}",

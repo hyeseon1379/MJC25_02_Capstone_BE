@@ -28,5 +28,17 @@ public class BookUpdateRequest {
     @Schema(description = "도서 표지 ID", example = "1")
     private Long imageId;
 
+    @Schema(description = "isbn번호", example = "9783929979701")
+    private String isbn;
+
+    @Schema(description = "출판년도", example = " 1994")
+    private String publicationYear;
+
+    @Schema(description = "표지 이미지 URL", example = "https://....")
+    private String coverUrl;
+
+    @Schema(description = "책 소개", example = "토지의 지리적 배경으로....")
+    private String description;
+
     private List<BookDetailsUpdateRequest> bookDetailsUpdate;
 }

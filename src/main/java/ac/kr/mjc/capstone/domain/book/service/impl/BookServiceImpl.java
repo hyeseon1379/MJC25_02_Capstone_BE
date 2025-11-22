@@ -137,6 +137,10 @@ public class BookServiceImpl implements BookService {
                 bookRequest.getTitle() != null ? bookRequest.getTitle() : book.getTitle(),
                 bookRequest.getAuthor() != null ? bookRequest.getAuthor() : book.getAuthor(),
                 bookRequest.getPublisher() != null ? bookRequest.getPublisher() : book.getPublisher(),
+                bookRequest.getIsbn() != null ? bookRequest.getIsbn() : book.getIsbn(),
+                bookRequest.getPublicationYear() != null ? bookRequest.getPublicationYear() : book.getPublicationYear(),
+                bookRequest.getCoverUrl() != null ? bookRequest.getCoverUrl() : book.getCoverUrl(),
+                bookRequest.getDescription() != null ? bookRequest.getDescription() : book.getDescription(),
                 newImage != null ? newImage : book.getImage()
         );
 

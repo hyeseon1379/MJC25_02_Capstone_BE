@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user")
@@ -33,7 +34,7 @@ public class UserEntity {
     @Column(length = 20)
     private String phone;
 
-    @Column(length = 20)
+    @Column(length = 20, unique = true)
     private String nickname;
 
     @Column(length = 10)
@@ -42,12 +43,19 @@ public class UserEntity {
     @Column(length = 255)
     private String address;
 
-    @Column(name = "profile_img", length = 255)
+    @Column(name = "profile_img", length = 60000)
     private String profileImg;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
+
+    // 비밀번호 재설정용 필드 추가
+    @Column(name = "reset_token", length = 10)
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
 
     @PrePersist
     public void prePersist() {
@@ -60,10 +68,23 @@ public class UserEntity {
         this.password = newPassword;
     }
 
-    public void updateProfile(String nickname, String phone, String address, String color) {
+    public void updateProfile(String nickname, String phone, String address, String color, String profileImg) {
         if (nickname != null) this.nickname = nickname;
         if (phone != null) this.phone = phone;
         if (address != null) this.address = address;
         if (color != null) this.color = color;
+        if (profileImg != null) this.profileImg = profileImg;
+    }
+
+    // 비밀번호 재설정 토큰 설정
+    public void setResetToken(String resetToken, LocalDateTime expiryDate) {
+        this.resetToken = resetToken;
+        this.resetTokenExpiry = expiryDate;
+    }
+
+    // 비밀번호 재설정 토큰 초기화
+    public void clearResetToken() {
+        this.resetToken = null;
+        this.resetTokenExpiry = null;
     }
 }

@@ -4,11 +4,30 @@ server:
 spring:
   application:
     name: capstone
-  
+
+  mail:
+    host: smtp.naver.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+        ssl:
+          trust: smtp.naver.com
+          protocols: TLSv1.2
+
   # Database
   # Docker 환경에서는 'localhost' 대신 'mysql' 서비스 이름 사용 (docker-compose에서 설정)
   datasource:
-    url: jdbc:mysql://mysql:3306/capstone?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    url: ${MYSQL_URL}
     # 환경 변수에서 값 주입
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
@@ -17,13 +36,24 @@ spring:
   # JPA
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: none #none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         # MySQL 8.0 버전에 맞는 Dialect 사용 권장
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+  # File Upload
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB      # 최대 파일 크기
+      max-request-size: 10MB   # 최대 요청 크기
+
+# File Upload Directory
+file:
+  upload-dir: uploads/board-images
 
 # JWT
 jwt:

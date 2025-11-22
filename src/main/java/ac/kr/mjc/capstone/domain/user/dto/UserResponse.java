@@ -22,6 +22,7 @@ public class UserResponse {
     private String nickname;
     private String color;
     private String address;
+    private String profileImg;
     private Role role;
 
     public static UserResponse from(UserEntity userEntity) {
@@ -34,6 +35,7 @@ public class UserResponse {
                 .nickname(userEntity.getNickname())
                 .color(userEntity.getColor())
                 .address(userEntity.getAddress())
+                .profileImg(userEntity.getProfileImg())
                 .role(userEntity.getRole())
                 .build();
     }

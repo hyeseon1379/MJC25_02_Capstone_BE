@@ -143,6 +143,10 @@ CREATE TABLE `Book` (
     `img_url` VARCHAR(500) NULL,
     `author` VARCHAR(100) NULL,
     `publisher` VARCHAR(100) NULL,
+    `isbn13` VARCHAR(15) NULL,
+    `publication_year` VARCHAR(5) NULL,
+    `cover_url` VARCHAR(500) NULL,
+    `description` TEXT NULL,
     PRIMARY KEY (`book_id`),
     KEY `idx_user_id` (`user_id`),
     CONSTRAINT `fk_Book_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE

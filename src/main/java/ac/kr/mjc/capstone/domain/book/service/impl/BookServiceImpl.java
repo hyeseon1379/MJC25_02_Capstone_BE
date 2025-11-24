@@ -45,8 +45,12 @@ public class BookServiceImpl implements BookService {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        ImageFileEntity image = fileRepository.findById(bookRequest.getImageId())
-                .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+        ImageFileEntity image = null;
+        if(bookRequest.getImageId() != null){
+            image = fileRepository.findById(bookRequest.getImageId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+        }
+
 
         Book book = Book.builder()
                 .title(bookRequest.getTitle())

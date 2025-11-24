@@ -87,4 +87,19 @@ public class AuthController {
         authService.resetPasswordWithToken(userId, request.getNewPassword());
         return ApiResponse.success("비밀번호가 성공적으로 재설정되었습니다");
     }
+
+    @PostMapping("/singup/send-code")
+    public ApiResponse<Void> forgotPassword(@Valid @RequestBody SingupEmailCodeSendRequest request) {
+        authService.sinupEmailSendCode(request.getEmail());
+        return ApiResponse.success("이메일 인증 코드를 전송했습니다");
+    }
+
+    @PostMapping("/singup/verify-code")
+    public ApiResponse<Boolean> verifyCode(@Valid @RequestBody SingupVerifyCodeRequest request) {
+        Boolean result = authService.sinupVerifyCode(request.getEmail(), request.getCode());
+        if(result){
+            return ApiResponse.success("인증에 성공했습니다.",result);
+        }
+        throw new IllegalArgumentException("인증에 실패했습니다.");
+    }
 }

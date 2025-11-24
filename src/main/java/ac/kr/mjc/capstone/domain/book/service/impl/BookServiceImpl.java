@@ -57,6 +57,10 @@ public class BookServiceImpl implements BookService {
                 .author(bookRequest.getAuthor())
                 .publisher(bookRequest.getPublisher())
                 .image(image)
+                .isbn(bookRequest.getIsbn())
+                .publicationYear(bookRequest.getPublicationYear())
+                .coverUrl(bookRequest.getCoverUrl())
+                .description(bookRequest.getDescription())
                 .user(userEntity)
                 .build();
 

@@ -35,6 +35,7 @@ DROP TABLE IF EXISTS `image`;
 DROP TABLE IF EXISTS `book_category`;
 DROP TABLE IF EXISTS `refresh_token`;
 DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `email_verify`;
 
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
@@ -42,6 +43,14 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ========================================
 -- Independent Tables (No Foreign Keys)
 -- ========================================
+-- email_verify Table
+CREATE TABLE email_verify (
+  verify_id BIGINT NOT NULL AUTO_INCREMENT,
+  email varchar(255) NOT NULL,
+  code varchar(255) NOT NULL,
+  expired_at DATETIME,
+  PRIMARY KEY (`verify_id`),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- User Table (must be created first as it's referenced by many tables)
 CREATE TABLE `user` (

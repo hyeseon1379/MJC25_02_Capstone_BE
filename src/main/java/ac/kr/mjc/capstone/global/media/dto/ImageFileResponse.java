@@ -18,6 +18,10 @@ public class ImageFileResponse {
     private ImageUsageType usageType;
 
     public static ImageFileResponse from(ImageFileEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
         return ImageFileResponse.builder()
                 .imageId(entity.getImageId())
                 .fileName(entity.getFileName())

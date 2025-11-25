@@ -11,6 +11,8 @@ import ac.kr.mjc.capstone.global.error.CustomException;
 import ac.kr.mjc.capstone.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,13 +67,11 @@ public class BoardService {
      * Read - 게시글 전체 조회
      */
     @Transactional(readOnly = true)
-    public List<BoardResponse> getAllBoards() {
-        List<BoardEntity> boards = boardRepository.findAll();
-        log.info("Total boards retrieved: {}", boards.size());
+    public Page<BoardResponse> getAllBoards(Pageable pageable) {
+        Page<BoardEntity> boards = boardRepository.findAll(pageable);
+        log.info("Total boards retrieved: {}", boards.getTotalElements());
 
-        return boards.stream()
-                .map(BoardResponse::from)
-                .collect(Collectors.toList());
+        return boards.map(BoardResponse::from);
     }
 
     /**

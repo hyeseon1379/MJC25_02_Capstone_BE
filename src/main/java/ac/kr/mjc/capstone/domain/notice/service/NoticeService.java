@@ -14,6 +14,8 @@ import ac.kr.mjc.capstone.global.error.CustomException;
 import ac.kr.mjc.capstone.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,13 +83,11 @@ public class NoticeService {
      * Read - 공지사항 전체 조회 (모든 사용자 가능, 최신순)
      */
     @Transactional(readOnly = true)
-    public List<NoticeResponse> getAllNotices() {
-        List<NoticeEntity> notices = noticeRepository.findAllByOrderByCreateAtDesc();
-        log.info("Total notices retrieved: {}", notices.size());
+    public Page<NoticeResponse> getAllNotices(Pageable pageable) {
+        Page<NoticeEntity> notices = noticeRepository.findAllByOrderByCreateAtDesc(pageable);
+        log.info("Total notices retrieved: {}", notices.getTotalElements());
 
-        return notices.stream()
-                .map(NoticeResponse::from)
-                .collect(Collectors.toList());
+        return notices.map(NoticeResponse::from);
     }
 
     /**

@@ -64,11 +64,11 @@ public class BoardService {
     }
 
     /**
-     * Read - 게시글 전체 조회
+     * Read - 게시글 전체 조회(검색)
      */
     @Transactional(readOnly = true)
-    public Page<BoardResponse> getAllBoards(Pageable pageable) {
-        Page<BoardEntity> boards = boardRepository.findAll(pageable);
+    public Page<BoardResponse> findAllByTitleContaining(Pageable pageable, String title) {
+        Page<BoardEntity> boards = boardRepository.findAllByTitleContaining(title, pageable);
         log.info("Total boards retrieved: {}", boards.getTotalElements());
 
         return boards.map(BoardResponse::from);

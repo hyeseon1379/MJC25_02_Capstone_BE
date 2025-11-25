@@ -91,11 +91,24 @@ public class AuthService {
                 "\n\n이 코드는 5분 동안 유효합니다.";
         emailService.sendEmail(email, "이메일 인증 코드", emailBody);
 
-        emailRepository.save(EmailVerify.builder()
-                        .code(resetCode)
-                        .email(email)
-                        .expiredAt(LocalDateTime.now().plusMinutes(5))
-                        .build());
+        EmailVerify emailVerify = emailRepository.findByEmail(email).orElse(null);
+
+        if(emailVerify != null){
+            emailRepository.save(EmailVerify.builder()
+                    .verifyId(emailVerify.getVerifyId())
+                    .code(resetCode)
+                    .email(email)
+                    .expiredAt(LocalDateTime.now().plusMinutes(5))
+                    .build());
+        }else {
+            emailRepository.save(EmailVerify.builder()
+                    .code(resetCode)
+                    .email(email)
+                    .expiredAt(LocalDateTime.now().plusMinutes(5))
+                    .build());
+
+        }
+
 
         log.info("Email verify code sent to: {}", email);
     }

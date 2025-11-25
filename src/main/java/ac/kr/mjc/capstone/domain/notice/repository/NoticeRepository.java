@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface NoticeRepository extends JpaRepository<NoticeEntity, Long> {
     // 최신순으로 공지사항 조회
-    Page<NoticeEntity> findAllByOrderByCreateAtDesc(Pageable pageable);
+    Page<NoticeEntity> findAllByTitleContaining(String title, Pageable pageable);
 }

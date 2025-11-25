@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLConnection;
+
 @RestController
 @RequestMapping("/api/images")
 @RequiredArgsConstructor
@@ -39,8 +41,29 @@ public class FileController {
     public ResponseEntity<Resource> getImage(@PathVariable Long imageId) {
         Resource resource = fileService.loadImage(imageId);
 
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 2️⃣ 파일 이름에서 MIME 타입 추출
+        String filename = resource.getFilename();
+        String contentType;
+
+        if (filename != null) {
+            // 확장자 기반으로 Content-Type 추출
+            contentType = URLConnection.guessContentTypeFromName(filename);
+        } else {
+            contentType = null;
+        }
+
+        // 3️⃣ MIME 타입이 추출되지 않으면 fallback
+        if (contentType == null) {
+            contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        }
+
+
         return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG) // 기본값, 실제로는 파일 타입에 따라 동적으로 설정 가능
+                .contentType(MediaType.parseMediaType(contentType))// 기본값, 실제로는 파일 타입에 따라 동적으로 설정 가능
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }

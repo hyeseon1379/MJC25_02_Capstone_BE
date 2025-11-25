@@ -30,7 +30,6 @@ DROP TABLE IF EXISTS `reader`;
 DROP TABLE IF EXISTS `children`;
 DROP TABLE IF EXISTS `challenge`;
 DROP TABLE IF EXISTS `package_categories`;
-DROP TABLE IF EXISTS `share_board_image`;
 DROP TABLE IF EXISTS `image`;
 DROP TABLE IF EXISTS `book_category`;
 DROP TABLE IF EXISTS `refresh_token`;
@@ -49,7 +48,7 @@ CREATE TABLE email_verify (
   email varchar(255) NOT NULL,
   code varchar(255) NOT NULL,
   expired_at DATETIME,
-  PRIMARY KEY (`verify_id`),
+  PRIMARY KEY (`verify_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- User Table (must be created first as it's referenced by many tables)
@@ -87,13 +86,6 @@ CREATE TABLE `challenge` (
     PRIMARY KEY (`challenge_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Share Board Image Table
-CREATE TABLE `share_board_image` (
-    `image_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `file_name` VARCHAR(255) NULL,
-    `file_path` VARCHAR(255) NULL,
-    PRIMARY KEY (`image_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Image Table
 CREATE TABLE `image` (
@@ -334,7 +326,7 @@ CREATE TABLE `share_board` (
     KEY `idx_datetime` (`datetime`),
     CONSTRAINT `fk_share_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_share_board_category` FOREIGN KEY (`category_id`) REFERENCES `package_categories` (`category_id`) ON DELETE SET NULL,
-    CONSTRAINT `fk_share_board_image` FOREIGN KEY (`image_id`) REFERENCES `share_board_image` (`image_id`) ON DELETE SET NULL
+    CONSTRAINT `fk_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Reply Table (depends on board and user)

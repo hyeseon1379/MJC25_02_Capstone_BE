@@ -67,11 +67,12 @@ public class BoardController {
      */
     @Operation(
             summary = "게시글 전체 조회",
-            description = "모든 사용자가 전체 게시글을 최신순으로 조회할 수 있습니다. (인증 불필요)"
+            description = "모든 사용자가 전체 게시글을 최신순으로 조회할 수 있습니다. (인증 불필요, 제목 검색)"
     )
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<BoardResponse>>> getAllBoards(@PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<BoardResponse> responses = boardService.getAllBoards(pageable);
+    public ResponseEntity<ApiResponse<Page<BoardResponse>>> getAllBoards(@PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable,
+                                                                         @RequestParam(name = "title", defaultValue = "") String title) {
+        Page<BoardResponse> responses = boardService.findAllByTitleContaining(pageable, title);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

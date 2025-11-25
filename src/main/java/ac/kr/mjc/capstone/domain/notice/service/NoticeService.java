@@ -83,8 +83,8 @@ public class NoticeService {
      * Read - 공지사항 전체 조회 (모든 사용자 가능, 최신순)
      */
     @Transactional(readOnly = true)
-    public Page<NoticeResponse> getAllNotices(Pageable pageable) {
-        Page<NoticeEntity> notices = noticeRepository.findAllByOrderByCreateAtDesc(pageable);
+    public Page<NoticeResponse> getAllNotices(Pageable pageable, String title) {
+        Page<NoticeEntity> notices = noticeRepository.findAllByTitleContaining(title, pageable);
         log.info("Total notices retrieved: {}", notices.getTotalElements());
 
         return notices.map(NoticeResponse::from);

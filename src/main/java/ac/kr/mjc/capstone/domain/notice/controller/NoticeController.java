@@ -70,8 +70,9 @@ public class NoticeController {
             description = "모든 사용자가 전체 공지사항을 최신순으로 조회할 수 있습니다. (인증 불필요)"
     )
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<NoticeResponse>>> getAllNotices(@PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<NoticeResponse> responses = noticeService.getAllNotices(pageable);
+    public ResponseEntity<ApiResponse<Page<NoticeResponse>>> getAllNotices(@PageableDefault(size = 10, direction = Sort.Direction.DESC) Pageable pageable,
+                                                                           @RequestParam(name = "title", defaultValue = "") String title) {
+        Page<NoticeResponse> responses = noticeService.getAllNotices(pageable, title);
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

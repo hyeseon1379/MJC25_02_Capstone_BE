@@ -36,7 +36,7 @@ spring:
   # JPA
   jpa:
     hibernate:
-      ddl-auto: create #none
+      ddl-auto: none #none
     show-sql: true
     properties:
       hibernate:

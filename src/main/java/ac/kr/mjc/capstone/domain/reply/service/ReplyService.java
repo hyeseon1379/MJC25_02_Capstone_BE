@@ -11,6 +11,8 @@ import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +60,7 @@ public class ReplyService {
     /**
      * 특정 게시글의 모든 댓글 조회
      */
-    public List<ReplyResponse> getRepliesByBoardId(Long boardId) {
+    public Page<ReplyResponse> getRepliesByBoardId(Long boardId, Pageable pageable) {
         log.info("게시글 댓글 조회 - boardId: {}", boardId);
 
         // 게시글 존재 확인
@@ -66,12 +68,10 @@ public class ReplyService {
             throw new IllegalArgumentException("존재하지 않는 게시글입니다. boardId: " + boardId);
         }
 
-        List<ReplyEntity> replies = replyRepository.findByBoardIdWithUser(boardId);
-        log.info("댓글 조회 완료 - 댓글 개수: {}", replies.size());
+        Page<ReplyEntity> replies = replyRepository.findByBoardIdWithUser(boardId, pageable);
+        log.info("댓글 조회 완료 - 댓글 개수: {}", replies.stream().count());
 
-        return replies.stream()
-                .map(ReplyResponse::from)
-                .collect(Collectors.toList());
+        return replies.map(ReplyResponse::from);
     }
 
     /**

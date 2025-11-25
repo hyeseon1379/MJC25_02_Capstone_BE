@@ -25,6 +25,22 @@ public class BookRequest {
     @Schema(description = "도서 출판사", example = "마로니에북스")
     private String publisher;
 
+    @Size(max = 13, message = "isbn번호는 13자 입니다.")
+    @Schema(description = "isbn번호", example = "9783929979701")
+    private String isbn;
+
+    @Size(max = 4, message = "출판년도는 4자 입니다.")
+    @Schema(description = "출판년도", example = " 1994")
+    private String publicationYear;
+
+    @Size(max = 500, message = "표지 이미지 URL은 최대 500자까지 가능합니다")
+    @Schema(description = "표지 이미지 URL", example = "https://....")
+    private String coverUrl;
+
+    // DB컬럼 TEXT타입으로 길이 제한 없음
+    @Schema(description = "책 소개", example = "토지의 지리적 배경으로....")
+    private String description;
+
     @Schema(description = "도서 표지 ID", example = "1")
     private Long imageId;
 

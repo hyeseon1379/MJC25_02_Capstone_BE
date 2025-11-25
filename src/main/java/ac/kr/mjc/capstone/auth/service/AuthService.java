@@ -180,11 +180,15 @@ public class AuthService {
         // 새 AccessToken 생성
         String newAccessToken = jwtService.generateAccessToken(userEntity.getUserId(), userEntity.getEmail());
 
+        // 새 RefreshToken 생성
+        String newRefreshToken = jwtService.generateRefreshToken(userEntity.getUserId());
+        saveOrUpdateRefreshToken(userEntity.getUserId(), newRefreshToken);
+
         log.info("Access token refreshed: userId={}", userEntity.getUserId());
 
         return TokenResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
+                .refreshToken(newRefreshToken)
                 .tokenType("Bearer")
                 .build();
     }

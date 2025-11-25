@@ -15,7 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
                         // 로컬 개발용 주소
                         "http://localhost/",
                         "http://localhost/",
-                        "http://localhost:8080/",  // 프론트엔드 개발 서버
+                        "http://localhost:8080",  // 프론트엔드 개발 서버
                         "http://127.0.0.1/",
                         "http://127.0.0.1/",
                         "http://127.0.0.1:8080/",

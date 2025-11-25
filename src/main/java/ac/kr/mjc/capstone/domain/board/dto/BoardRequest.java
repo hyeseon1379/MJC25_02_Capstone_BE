@@ -1,6 +1,6 @@
 package ac.kr.mjc.capstone.domain.board.dto;
 
-import ac.kr.mjc.capstone.domain.boardimage.entity.BoardImageEntity;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -20,5 +20,5 @@ public class BoardRequest {
     @Size(max = 1000, message = "내용은 최대 1000자까지 가능합니다")
     private String content;
 
-    private BoardImageEntity boardImage;
+    private ImageFileEntity imageFile;
 }

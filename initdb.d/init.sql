@@ -30,12 +30,11 @@ DROP TABLE IF EXISTS `reader`;
 DROP TABLE IF EXISTS `children`;
 DROP TABLE IF EXISTS `challenge`;
 DROP TABLE IF EXISTS `package_categories`;
-DROP TABLE IF EXISTS `share_board_image`;
-DROP TABLE IF EXISTS `board_image`;
 DROP TABLE IF EXISTS `image`;
 DROP TABLE IF EXISTS `book_category`;
 DROP TABLE IF EXISTS `refresh_token`;
 DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `email_verify`;
 
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
@@ -43,6 +42,14 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ========================================
 -- Independent Tables (No Foreign Keys)
 -- ========================================
+-- email_verify Table
+CREATE TABLE email_verify (
+  verify_id BIGINT NOT NULL AUTO_INCREMENT,
+  email varchar(255) NOT NULL,
+  code varchar(255) NOT NULL,
+  expired_at DATETIME,
+  PRIMARY KEY (`verify_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- User Table (must be created first as it's referenced by many tables)
 CREATE TABLE `user` (
@@ -79,28 +86,14 @@ CREATE TABLE `challenge` (
     PRIMARY KEY (`challenge_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Board Image Table
-CREATE TABLE `board_image` (
-    `image_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `file_name` VARCHAR(255) NULL,
-    `file_path` VARCHAR(255) NULL,
-    PRIMARY KEY (`image_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Share Board Image Table
-CREATE TABLE `share_board_image` (
-    `image_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `file_name` VARCHAR(255) NULL,
-    `file_path` VARCHAR(255) NULL,
-    PRIMARY KEY (`image_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Image Table
 CREATE TABLE `image` (
-       `image_id` BIGINT NOT NULL AUTO_INCREMENT,
-       `file_name` VARCHAR(255) NULL,
-       `file_path` VARCHAR(255) NULL,
-       PRIMARY KEY (`image_id`)
+     `image_id` BIGINT NOT NULL AUTO_INCREMENT,
+     `file_name` VARCHAR(255) NULL,
+     `file_path` VARCHAR(255) NULL,
+     `usage_type` VARCHAR(50) NULL,
+     PRIMARY KEY (`image_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================
@@ -183,7 +176,7 @@ CREATE TABLE `contest` (
     CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Board Table (depends on user and board_image)
+-- Board Table (depends on user and image)
 CREATE TABLE `board` (
     `board_id` BIGINT NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT NOT NULL,
@@ -196,10 +189,10 @@ CREATE TABLE `board` (
     KEY `idx_user_id` (`user_id`),
     KEY `idx_image_id` (`image_id`),
     CONSTRAINT `fk_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_board_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
+    CONSTRAINT `fk_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Board Table (depends on user and board_image)
+-- Board Table (depends on user and image)
 CREATE TABLE `notice` (
   `notice_id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` bigint DEFAULT NULL,
@@ -212,7 +205,7 @@ CREATE TABLE `notice` (
   KEY `fk_notice_user` (`user_id`),
   KEY `fk_notice_image` (`image_id`),
   CONSTRAINT `fk_notice_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_notice_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
+  CONSTRAINT `fk_notice_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================
@@ -333,7 +326,7 @@ CREATE TABLE `share_board` (
     KEY `idx_datetime` (`datetime`),
     CONSTRAINT `fk_share_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_share_board_category` FOREIGN KEY (`category_id`) REFERENCES `package_categories` (`category_id`) ON DELETE SET NULL,
-    CONSTRAINT `fk_share_board_image` FOREIGN KEY (`image_id`) REFERENCES `share_board_image` (`image_id`) ON DELETE SET NULL
+    CONSTRAINT `fk_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Reply Table (depends on board and user)
@@ -466,9 +459,9 @@ CREATE TABLE `refresh_token` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (2,'admin1@admin.com','admin1','$2a$10$UX7LPes/mDVlBOlpoZRl/u/6wRLongxZVEBrJN4a6XGdBXxjqL5Km','2000-01-01','010-1111-1111','admin1','#FFFFFF','admin',NULL,'ADMIN'),
-                          (3,'admin2@admin.com','admin2','$2a$10$rP.0wpQ5KDjGhqvAceh5YO.poPHgikyHNlmMaLMJ.2rtZ9LX.2XG.','2000-01-01','010-1111-1111','admin2','#FFFFFF','admin',NULL,'ADMIN'),
-                          (4,'admin3@admin.com','admin3','$2a$10$tDI0SWtroMdOpduPIQd2zOKVnvCDzx1qK7KSo.ZzrsF6s4IQE5W66','2000-01-01','010-1111-1111','admin3','#FFFFFF','admin',NULL,'ADMIN');
+INSERT INTO `user` VALUES (2,'admin1@admin.com','admin1','$2a$10$UX7LPes/mDVlBOlpoZRl/u/6wRLongxZVEBrJN4a6XGdBXxjqL5Km','2000-01-01','010-1111-1111','admin1','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL),
+                          (3,'admin2@admin.com','admin2','$2a$10$rP.0wpQ5KDjGhqvAceh5YO.poPHgikyHNlmMaLMJ.2rtZ9LX.2XG.','2000-01-01','010-1111-1111','admin2','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL),
+                          (4,'admin3@admin.com','admin3','$2a$10$tDI0SWtroMdOpduPIQd2zOKVnvCDzx1qK7KSo.ZzrsF6s4IQE5W66','2000-01-01','010-1111-1111','admin3','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 

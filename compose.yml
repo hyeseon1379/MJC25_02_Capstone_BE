@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql:
     container_name: mysql_container
@@ -27,7 +25,7 @@ services:
       - capstone
 
   backend:
-    image: jhh0101/capstone:v1.0.12
+    image: jhh0101/capstone:v1.0.18
     container_name: backend_container
     ports:
       # 로컬 PC의 18888 포트 -> 컨테이너의 8082 포트로 연결

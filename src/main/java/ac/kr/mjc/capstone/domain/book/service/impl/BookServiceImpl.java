@@ -300,7 +300,12 @@ public class BookServiceImpl implements BookService {
 
                 readerRepository.save(reader);
             }else{
-                throw new CustomException(ErrorCode.CHILD_NOT_FOUND);
+                // childId가 null이면 ADULT 타입 리더 생성
+                reader = Reader.builder()
+                        .userEntity(userEntity)
+                        .readerType(ReaderType.ADULT)
+                        .build();
+                readerRepository.save(reader);
             }
             return reader;
         }

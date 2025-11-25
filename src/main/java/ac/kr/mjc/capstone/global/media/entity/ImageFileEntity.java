@@ -21,5 +21,6 @@ public class ImageFileEntity {
     private String filePath;
 
     @Column(name = "usage_type", length = 50)
+    @Enumerated(EnumType.STRING) // ENUM타입을 DB에 String타입으로 저장
     private ImageUsageType usageType;
 }

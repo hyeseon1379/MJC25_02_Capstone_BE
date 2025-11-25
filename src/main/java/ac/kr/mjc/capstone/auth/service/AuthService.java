@@ -1,7 +1,9 @@
 package ac.kr.mjc.capstone.auth.service;
 
 import ac.kr.mjc.capstone.auth.dto.*;
+import ac.kr.mjc.capstone.auth.entity.EmailVerify;
 import ac.kr.mjc.capstone.auth.entity.RefreshToken;
+import ac.kr.mjc.capstone.auth.repository.EmailVerifyRepository;
 import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
 import ac.kr.mjc.capstone.domain.user.dto.SignupRequest;
 import ac.kr.mjc.capstone.domain.user.entity.Role;
@@ -34,6 +36,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProperties jwtProperties;
     private final EmailService emailService;
+    private final EmailVerifyRepository emailRepository;
 
     @Transactional
     public void forgotPassword(String email) {
@@ -74,6 +77,39 @@ public class AuthService {
         return VerifyCodeResponse.builder()
                 .temporaryToken(temporaryToken)
                 .build();
+    }
+
+    @Transactional
+    public void sinupEmailSendCode(String email) {
+        // 6자리 인증 코드 생성
+        Random random = new Random();
+        int code = 100000 + random.nextInt(900000);
+        String resetCode = String.valueOf(code);
+
+        // 이메일 발송
+        String emailBody = "이메일 인증을 위한 코드입니다:\n\n" + resetCode +
+                "\n\n이 코드는 5분 동안 유효합니다.";
+        emailService.sendEmail(email, "이메일 인증 코드", emailBody);
+
+        emailRepository.save(EmailVerify.builder()
+                        .code(resetCode)
+                        .email(email)
+                        .expiredAt(LocalDateTime.now().plusMinutes(5))
+                        .build());
+
+        log.info("Email verify code sent to: {}", email);
+    }
+
+    @Transactional(readOnly = true)
+    public Boolean sinupVerifyCode(String email,String code) {
+        EmailVerify emailVerify = emailRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_VERIFICATION_CODE));
+
+        if (emailVerify.getCode().equals(code)){
+            log.info("Reset code verified for user: {}", email);
+            return true;
+        }
+        return false;
     }
 
     @Transactional
@@ -180,11 +216,15 @@ public class AuthService {
         // 새 AccessToken 생성
         String newAccessToken = jwtService.generateAccessToken(userEntity.getUserId(), userEntity.getEmail());
 
+        // 새 RefreshToken 생성
+        String newRefreshToken = jwtService.generateRefreshToken(userEntity.getUserId());
+        saveOrUpdateRefreshToken(userEntity.getUserId(), newRefreshToken);
+
         log.info("Access token refreshed: userId={}", userEntity.getUserId());
 
         return TokenResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
+                .refreshToken(newRefreshToken)
                 .tokenType("Bearer")
                 .build();
     }

@@ -31,11 +31,11 @@ DROP TABLE IF EXISTS `children`;
 DROP TABLE IF EXISTS `challenge`;
 DROP TABLE IF EXISTS `package_categories`;
 DROP TABLE IF EXISTS `share_board_image`;
-DROP TABLE IF EXISTS `board_image`;
 DROP TABLE IF EXISTS `image`;
 DROP TABLE IF EXISTS `book_category`;
 DROP TABLE IF EXISTS `refresh_token`;
 DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `email_verify`;
 
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
@@ -43,6 +43,14 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ========================================
 -- Independent Tables (No Foreign Keys)
 -- ========================================
+-- email_verify Table
+CREATE TABLE email_verify (
+  verify_id BIGINT NOT NULL AUTO_INCREMENT,
+  email varchar(255) NOT NULL,
+  code varchar(255) NOT NULL,
+  expired_at DATETIME,
+  PRIMARY KEY (`verify_id`),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- User Table (must be created first as it's referenced by many tables)
 CREATE TABLE `user` (
@@ -79,14 +87,6 @@ CREATE TABLE `challenge` (
     PRIMARY KEY (`challenge_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Board Image Table
-CREATE TABLE `board_image` (
-    `image_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `file_name` VARCHAR(255) NULL,
-    `file_path` VARCHAR(255) NULL,
-    PRIMARY KEY (`image_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- Share Board Image Table
 CREATE TABLE `share_board_image` (
     `image_id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -97,10 +97,11 @@ CREATE TABLE `share_board_image` (
 
 -- Image Table
 CREATE TABLE `image` (
-       `image_id` BIGINT NOT NULL AUTO_INCREMENT,
-       `file_name` VARCHAR(255) NULL,
-       `file_path` VARCHAR(255) NULL,
-       PRIMARY KEY (`image_id`)
+     `image_id` BIGINT NOT NULL AUTO_INCREMENT,
+     `file_name` VARCHAR(255) NULL,
+     `file_path` VARCHAR(255) NULL,
+     `usage_type` VARCHAR(50) NULL,
+     PRIMARY KEY (`image_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================
@@ -143,6 +144,10 @@ CREATE TABLE `Book` (
     `img_url` VARCHAR(500) NULL,
     `author` VARCHAR(100) NULL,
     `publisher` VARCHAR(100) NULL,
+    `isbn13` VARCHAR(15) NULL,
+    `publication_year` VARCHAR(5) NULL,
+    `cover_url` VARCHAR(500) NULL,
+    `description` TEXT NULL,
     PRIMARY KEY (`book_id`),
     KEY `idx_user_id` (`user_id`),
     CONSTRAINT `fk_Book_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
@@ -179,7 +184,7 @@ CREATE TABLE `contest` (
     CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Board Table (depends on user and board_image)
+-- Board Table (depends on user and image)
 CREATE TABLE `board` (
     `board_id` BIGINT NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT NOT NULL,
@@ -192,10 +197,10 @@ CREATE TABLE `board` (
     KEY `idx_user_id` (`user_id`),
     KEY `idx_image_id` (`image_id`),
     CONSTRAINT `fk_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_board_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
+    CONSTRAINT `fk_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Board Table (depends on user and board_image)
+-- Board Table (depends on user and image)
 CREATE TABLE `notice` (
   `notice_id` bigint NOT NULL AUTO_INCREMENT,
   `user_id` bigint DEFAULT NULL,
@@ -208,7 +213,7 @@ CREATE TABLE `notice` (
   KEY `fk_notice_user` (`user_id`),
   KEY `fk_notice_image` (`image_id`),
   CONSTRAINT `fk_notice_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_notice_image` FOREIGN KEY (`image_id`) REFERENCES `board_image` (`image_id`) ON DELETE SET NULL
+  CONSTRAINT `fk_notice_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================

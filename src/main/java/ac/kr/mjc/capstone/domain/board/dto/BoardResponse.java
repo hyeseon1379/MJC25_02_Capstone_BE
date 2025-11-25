@@ -1,8 +1,8 @@
 package ac.kr.mjc.capstone.domain.board.dto;
 
 import ac.kr.mjc.capstone.domain.board.entity.BoardEntity;
-import ac.kr.mjc.capstone.domain.boardimage.entity.BoardImageEntity;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,7 +23,7 @@ public class BoardResponse {
 
     private UserEntity user;
 
-    private BoardImageEntity boardImage;
+    private ImageFileEntity imageFile;
 
     public static BoardResponse from(BoardEntity entity){
         return BoardResponse.builder()
@@ -33,7 +33,7 @@ public class BoardResponse {
                 .createAt(entity.getCreateAt())
                 .updateAt(entity.getUpdateAt())
                 .user(entity.getUser())
-                .boardImage(entity.getBoardImage())
+                .imageFile(entity.getImageFile())
                 .build();
     }
 }

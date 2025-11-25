@@ -21,6 +21,7 @@ public class FileController {
     /**
      * 이미지 업로드
      * POST /api/board-images/upload
+     * usageType 소문자로 입력 가능
      */
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse<ImageFileResponse>> uploadImage(

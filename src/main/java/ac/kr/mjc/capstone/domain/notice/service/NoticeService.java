@@ -1,7 +1,5 @@
 package ac.kr.mjc.capstone.domain.notice.service;
 
-import ac.kr.mjc.capstone.domain.boardimage.entity.BoardImageEntity;
-import ac.kr.mjc.capstone.domain.boardimage.repository.BoardImageRepository;
 import ac.kr.mjc.capstone.domain.notice.dto.NoticeRequest;
 import ac.kr.mjc.capstone.domain.notice.dto.NoticeResponse;
 import ac.kr.mjc.capstone.domain.notice.dto.NoticeUpdateRequest;
@@ -12,6 +10,8 @@ import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
 import ac.kr.mjc.capstone.global.error.CustomException;
 import ac.kr.mjc.capstone.global.error.ErrorCode;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
+import ac.kr.mjc.capstone.global.media.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,7 +29,7 @@ public class NoticeService {
 
     private final NoticeRepository noticeRepository;
     private final UserRepository userRepository;
-    private final BoardImageRepository boardImageRepository;
+    private final FileRepository fileRepository;
 
     /**
      * Create - 공지사항 생성 (ADMIN만 가능)
@@ -46,9 +46,9 @@ public class NoticeService {
         }
 
         // 이미지 조회 (imageId가 있는 경우)
-        BoardImageEntity boardImageEntity = null;
+        ImageFileEntity imageFileEntity = null;
         if (request.getImageId() != null) {
-            boardImageEntity = boardImageRepository.findById(request.getImageId())
+            imageFileEntity = fileRepository.findById(request.getImageId())
                     .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
         }
 
@@ -57,7 +57,7 @@ public class NoticeService {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .user(userEntity)
-                .boardImage(boardImageEntity)
+                .fileEntity(imageFileEntity)
                 .build();
 
         NoticeEntity savedNotice = noticeRepository.save(noticeEntity);
@@ -108,9 +108,9 @@ public class NoticeService {
         }
 
         // 이미지 조회 (imageId가 있는 경우)
-        BoardImageEntity boardImageEntity = null;
+        ImageFileEntity imageFileEntity = null;
         if (request.getImageId() != null) {
-            boardImageEntity = boardImageRepository.findById(request.getImageId())
+            imageFileEntity = fileRepository.findById(request.getImageId())
                     .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
         }
 
@@ -118,7 +118,7 @@ public class NoticeService {
         noticeEntity.updateNotice(
                 request.getTitle(),
                 request.getContent(),
-                boardImageEntity
+                imageFileEntity
         );
 
         log.info("Notice updated: noticeId={}, title={}, userId={}",

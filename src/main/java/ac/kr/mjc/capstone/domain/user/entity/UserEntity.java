@@ -43,7 +43,7 @@ public class UserEntity {
     @Column(length = 255)
     private String address;
 
-    @Column(name = "profile_img", length = 255)
+    @Column(name = "profile_img", length = 60000)
     private String profileImg;
 
     @Enumerated(EnumType.STRING)

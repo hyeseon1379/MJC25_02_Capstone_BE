@@ -45,14 +45,22 @@ public class BookServiceImpl implements BookService {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        ImageFileEntity image = fileRepository.findById(bookRequest.getImageId())
-                .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+        ImageFileEntity image = null;
+        if(bookRequest.getImageId() != null){
+            image = fileRepository.findById(bookRequest.getImageId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+        }
+
 
         Book book = Book.builder()
                 .title(bookRequest.getTitle())
                 .author(bookRequest.getAuthor())
                 .publisher(bookRequest.getPublisher())
                 .image(image)
+                .isbn(bookRequest.getIsbn())
+                .publicationYear(bookRequest.getPublicationYear())
+                .coverUrl(bookRequest.getCoverUrl())
+                .description(bookRequest.getDescription())
                 .user(userEntity)
                 .build();
 
@@ -137,6 +145,10 @@ public class BookServiceImpl implements BookService {
                 bookRequest.getTitle() != null ? bookRequest.getTitle() : book.getTitle(),
                 bookRequest.getAuthor() != null ? bookRequest.getAuthor() : book.getAuthor(),
                 bookRequest.getPublisher() != null ? bookRequest.getPublisher() : book.getPublisher(),
+                bookRequest.getIsbn() != null ? bookRequest.getIsbn() : book.getIsbn(),
+                bookRequest.getPublicationYear() != null ? bookRequest.getPublicationYear() : book.getPublicationYear(),
+                bookRequest.getCoverUrl() != null ? bookRequest.getCoverUrl() : book.getCoverUrl(),
+                bookRequest.getDescription() != null ? bookRequest.getDescription() : book.getDescription(),
                 newImage != null ? newImage : book.getImage()
         );
 

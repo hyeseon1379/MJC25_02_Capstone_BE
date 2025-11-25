@@ -4,9 +4,11 @@ import ac.kr.mjc.capstone.auth.dto.*;
 import ac.kr.mjc.capstone.auth.service.AuthService;
 import ac.kr.mjc.capstone.global.error.LoginException;
 import ac.kr.mjc.capstone.global.response.ApiResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +21,18 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ApiResponse<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ApiResponse<String> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
         try{
             TokenResponse tokenResponse = authService.login(request);
-            return ApiResponse.success("로그인 성공", tokenResponse);
+            ResponseCookie responseCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
+                    .path("/")
+                    .secure(true)                                // https 환경에서만 쿠키가 발동합니다.
+                    .sameSite("None")                            // 동일 사이트과 크로스 사이트에 모두 쿠키 전송이 가능합니다
+                    .httpOnly(true)                              // 브라우저에서 쿠키에 접근할 수 없도록 제한
+                    .build();
+
+            response.setHeader("Set-cookie", responseCookie.toString());
+            return ApiResponse.success("로그인 성공", tokenResponse.getAccessToken());
 
         } catch (Exception e) {
             log.error("로그인 실패 : " + e.toString());
@@ -32,9 +42,17 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ApiResponse<TokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+    public ApiResponse<String> refresh(@Valid @RequestBody RefreshTokenRequest request, HttpServletResponse response) {
         TokenResponse tokenResponse = authService.refreshAccessToken(request.getRefreshToken());
-        return ApiResponse.success("토큰 갱신 성공", tokenResponse);
+        ResponseCookie responseCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
+                .path("/")
+                .secure(true)                                // https 환경에서만 쿠키가 발동합니다.
+                .sameSite("None")                            // 동일 사이트과 크로스 사이트에 모두 쿠키 전송이 가능합니다
+                .httpOnly(true)                              // 브라우저에서 쿠키에 접근할 수 없도록 제한
+                .build();
+
+        response.setHeader("Set-Cookie", responseCookie.toString());
+        return ApiResponse.success("토큰 갱신 성공", tokenResponse.getAccessToken());
     }
 
     @PostMapping("/logout")
@@ -68,5 +86,20 @@ public class AuthController {
 
         authService.resetPasswordWithToken(userId, request.getNewPassword());
         return ApiResponse.success("비밀번호가 성공적으로 재설정되었습니다");
+    }
+
+    @PostMapping("/singup/send-code")
+    public ApiResponse<Void> forgotPassword(@Valid @RequestBody SingupEmailCodeSendRequest request) {
+        authService.sinupEmailSendCode(request.getEmail());
+        return ApiResponse.success("이메일 인증 코드를 전송했습니다");
+    }
+
+    @PostMapping("/singup/verify-code")
+    public ApiResponse<Boolean> verifyCode(@Valid @RequestBody SingupVerifyCodeRequest request) {
+        Boolean result = authService.sinupVerifyCode(request.getEmail(), request.getCode());
+        if(result){
+            return ApiResponse.success("인증에 성공했습니다.",result);
+        }
+        throw new IllegalArgumentException("인증에 실패했습니다.");
     }
 }

@@ -1,475 +1,938 @@
--- Database Schema for Book Reading Application
--- Created with logical flow and proper dependencies
--- Updated to match BaseEntity configuration (create_at/update_at)
+-- MySQL dump 10.13  Distrib 8.0.19, for Win64 (x86_64)
+--
+-- Host: localhost    Database: capstone
+-- ------------------------------------------------------
+-- Server version	8.0.43
 
--- Disable foreign key checks temporarily
-SET FOREIGN_KEY_CHECKS = 0;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- Drop tables if exist (in reverse order of creation)
-DROP TABLE IF EXISTS `result_images`;
-DROP TABLE IF EXISTS `vote`;
-DROP TABLE IF EXISTS `dialogue_answer`;
-DROP TABLE IF EXISTS `share_request`;
-DROP TABLE IF EXISTS `story`;
-DROP TABLE IF EXISTS `dialogue_question`;
-DROP TABLE IF EXISTS `contest_result`;
-DROP TABLE IF EXISTS `reply`;
-DROP TABLE IF EXISTS `share_board`;
-DROP TABLE IF EXISTS `contest_details`;
-DROP TABLE IF EXISTS `challenge_details`;
-DROP TABLE IF EXISTS `Subscription`;
-DROP TABLE IF EXISTS `package_book`;
-DROP TABLE IF EXISTS `dialogue`;
-DROP TABLE IF EXISTS `book_details`;
-DROP TABLE IF EXISTS `contest`;
-DROP TABLE IF EXISTS `package`;
-DROP TABLE IF EXISTS `board`;
-DROP TABLE IF EXISTS `notice`;
+--
+-- Table structure for table `Book`
+--
+
 DROP TABLE IF EXISTS `Book`;
-DROP TABLE IF EXISTS `reader`;
-DROP TABLE IF EXISTS `children`;
-DROP TABLE IF EXISTS `challenge`;
-DROP TABLE IF EXISTS `package_categories`;
-DROP TABLE IF EXISTS `image`;
-DROP TABLE IF EXISTS `book_category`;
-DROP TABLE IF EXISTS `refresh_token`;
-DROP TABLE IF EXISTS `user`;
-DROP TABLE IF EXISTS `email_verify`;
-
--- Re-enable foreign key checks
-SET FOREIGN_KEY_CHECKS = 1;
-
--- ========================================
--- Independent Tables (No Foreign Keys)
--- ========================================
--- email_verify Table
-CREATE TABLE email_verify (
-  verify_id BIGINT NOT NULL AUTO_INCREMENT,
-  email varchar(255) NOT NULL,
-  code varchar(255) NOT NULL,
-  expired_at DATETIME,
-  PRIMARY KEY (`verify_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- User Table (must be created first as it's referenced by many tables)
-CREATE TABLE `user` (
-  `user_id` bigint NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `username` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `birth` date DEFAULT NULL,
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `nickname` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `color` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `profile_img` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `role` enum('ADMIN','USER') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',
-  `reset_token` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `reset_token_expiry` datetime DEFAULT NULL,
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `nickname` (`nickname`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Package Categories Table
-CREATE TABLE `package_categories` (
-    `category_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `category_name` VARCHAR(255) NOT NULL,
-    PRIMARY KEY (`category_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Challenge Table
-CREATE TABLE `challenge` (
-    `challenge_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(255) NOT NULL,
-    `description` TEXT NULL,
-    PRIMARY KEY (`challenge_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- Image Table
-CREATE TABLE `image` (
-     `image_id` BIGINT NOT NULL AUTO_INCREMENT,
-     `file_name` VARCHAR(255) NULL,
-     `file_path` VARCHAR(255) NULL,
-     `usage_type` VARCHAR(50) NULL,
-     PRIMARY KEY (`image_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ========================================
--- First Level Dependencies
--- ========================================
-
--- Children Table (depends on user)
-CREATE TABLE `children` (
-    `child_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `child_name` VARCHAR(50) NOT NULL,
-    `child_birth` DATE NULL,
-    `gender` ENUM('M', 'F') NULL,
-    `birth_order` INT NULL COMMENT 'Child order number',
-    `profile_img` VARCHAR(255) NULL,
-    `color` VARCHAR(10) NULL,
-    PRIMARY KEY (`child_id`),
-    KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_children_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Reader Table (depends on user)
-CREATE TABLE `reader` (
-    `reader_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `child_id` BIGINT NULL,
-    `reader_type` ENUM('adult', 'child') NOT NULL,
-    PRIMARY KEY (`reader_id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_child_id` (`child_id`),
-    CONSTRAINT `fk_reader_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_reader_children` FOREIGN KEY (`child_id`) REFERENCES `children` (`child_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Book Table (depends on book_category)
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Book` (
-    `book_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `title` VARCHAR(255) NOT NULL,
-    `img_url` VARCHAR(500) NULL,
-    `author` VARCHAR(100) NULL,
-    `publisher` VARCHAR(100) NULL,
-    `isbn13` VARCHAR(15) NULL,
-    `publication_year` VARCHAR(5) NULL,
-    `cover_url` VARCHAR(500) NULL,
-    `description` TEXT NULL,
+    `book_id` bigint NOT NULL AUTO_INCREMENT,
+    `category_id` bigint DEFAULT NULL,
+    `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `img_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `author` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `publisher` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `isbn13` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `publication_year` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `cover_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
     PRIMARY KEY (`book_id`),
-    KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_Book_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Package Table (depends on package_categories and user)
-CREATE TABLE `package` (
-    `package_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `category_id` BIGINT NOT NULL,
-    `user_id` BIGINT NOT NULL,
-    `title` VARCHAR(255) NOT NULL,
-    `content` TEXT NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`package_id`),
     KEY `idx_category_id` (`category_id`),
-    KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_package_category` FOREIGN KEY (`category_id`) REFERENCES `package_categories` (`category_id`) ON DELETE RESTRICT,
-    CONSTRAINT `fk_package_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_book_category` FOREIGN KEY (`category_id`) REFERENCES `book_category` (`category_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Contest Table (depends on user)
-CREATE TABLE `contest` (
-    `contest_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `title` VARCHAR(255) NOT NULL,
-    `content` TEXT NULL,
-    `start_date` DATETIME NULL,
-    `end_date` DATETIME NULL,
-    `progress_status` ENUM('planned', 'ongoing', 'completed', 'cancelled') NOT NULL DEFAULT 'planned',
-    `image` VARCHAR(500) NULL,
-    PRIMARY KEY (`contest_id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_progress_status` (`progress_status`),
-    CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- Dumping data for table `Book`
+--
 
--- Board Table (depends on user and image)
-CREATE TABLE `board` (
-    `board_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `image_id` BIGINT NULL,
-    `title` VARCHAR(100) NOT NULL,
-    `content` TEXT NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`board_id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_image_id` (`image_id`),
-    CONSTRAINT `fk_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+LOCK TABLES `Book` WRITE;
+/*!40000 ALTER TABLE `Book` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Book` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- Board Table (depends on user and image)
-CREATE TABLE `notice` (
-  `notice_id` bigint NOT NULL AUTO_INCREMENT,
-  `user_id` bigint DEFAULT NULL,
-  `image_id` bigint DEFAULT NULL,
-  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` varchar(2000) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `create_at` datetime(6) DEFAULT NULL,
-  `update_at` datetime(6) DEFAULT NULL,
-  PRIMARY KEY (`notice_id`),
-  KEY `fk_notice_user` (`user_id`),
-  KEY `fk_notice_image` (`image_id`),
-  CONSTRAINT `fk_notice_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_notice_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- Table structure for table `Subscription`
+--
 
--- ========================================
--- Second Level Dependencies
--- ========================================
-
--- Book Details Table (depends on Book and reader)
-CREATE TABLE `book_details` (
-    `details_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `book_id` BIGINT NOT NULL,
-    `reader_id` BIGINT NOT NULL,
-    `status` ENUM('to_read', 'reading', 'completed') NOT NULL DEFAULT 'to_read',
-    `start_date` DATE NULL,
-    `end_date` DATE NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`details_id`),
-    KEY `idx_book_id` (`book_id`),
-    KEY `idx_reader_id` (`reader_id`),
-    CONSTRAINT `fk_book_details_book` FOREIGN KEY (`book_id`) REFERENCES `Book` (`book_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_book_details_reader` FOREIGN KEY (`reader_id`) REFERENCES `reader` (`reader_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Dialogue Table (depends on Book)
-CREATE TABLE `dialogue` (
-    `dialog_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `book_id` BIGINT NOT NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`dialog_id`),
-    KEY `idx_book_id` (`book_id`),
-    CONSTRAINT `fk_dialogue_book` FOREIGN KEY (`book_id`) REFERENCES `Book` (`book_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Package Book Table (depends on Book and package)
-CREATE TABLE `package_book` (
-    `packageBook_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `book_id` BIGINT NOT NULL,
-    `package_id` BIGINT NOT NULL,
-    PRIMARY KEY (`packageBook_id`),
-    KEY `idx_book_id` (`book_id`),
-    KEY `idx_package_id` (`package_id`),
-    CONSTRAINT `fk_package_book_book` FOREIGN KEY (`book_id`) REFERENCES `Book` (`book_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_package_book_package` FOREIGN KEY (`package_id`) REFERENCES `package` (`package_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Subscription Table (depends on user and package)
+DROP TABLE IF EXISTS `Subscription`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Subscription` (
-    `subscription_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `package_id` BIGINT NOT NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `start_date` DATETIME NOT NULL,
-    `end_date` DATETIME NOT NULL,
-    `auto_renew` BOOLEAN NOT NULL DEFAULT FALSE,
-    `status` ENUM('active', 'expired', 'cancelled') NOT NULL DEFAULT 'active',
-    `payment_method` VARCHAR(50) NULL,
-    `payment_status` ENUM('pending', 'completed', 'failed', 'refunded') NOT NULL DEFAULT 'pending',
-    `amount` DECIMAL(10,2) NOT NULL,
+    `subscription_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `package_id` bigint NOT NULL,
+    `create_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    `update_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    `start_date` datetime NOT NULL,
+    `end_date` datetime NOT NULL,
+    `auto_renew` tinyint(1) NOT NULL DEFAULT '0',
+    `status` enum('active','expired','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+    `payment_method` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `payment_status` enum('pending','completed','failed','refunded') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+    `amount` decimal(10,2) NOT NULL,
     PRIMARY KEY (`subscription_id`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_package_id` (`package_id`),
     KEY `idx_status` (`status`),
-    CONSTRAINT `fk_subscription_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_subscription_package` FOREIGN KEY (`package_id`) REFERENCES `package` (`package_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_subscription_package` FOREIGN KEY (`package_id`) REFERENCES `package` (`package_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_subscription_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Challenge Details Table (depends on challenge and children)
+--
+-- Dumping data for table `Subscription`
+--
+
+LOCK TABLES `Subscription` WRITE;
+/*!40000 ALTER TABLE `Subscription` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Subscription` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `board`
+--
+
+DROP TABLE IF EXISTS `board`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `board` (
+    `board_id` bigint NOT NULL AUTO_INCREMENT,
+    `create_at` datetime(6) DEFAULT NULL,
+    `image_id` bigint DEFAULT NULL,
+    `update_at` datetime(6) DEFAULT NULL,
+    `user_id` bigint DEFAULT NULL,
+    `title` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `content` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
+    PRIMARY KEY (`board_id`),
+    KEY `FKfyf1fchnby6hndhlfaidier1r` (`user_id`),
+    KEY `board_image_FK` (`image_id`),
+    CONSTRAINT `board_image_FK` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+    CONSTRAINT `FKfyf1fchnby6hndhlfaidier1r` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `board`
+--
+
+LOCK TABLES `board` WRITE;
+/*!40000 ALTER TABLE `board` DISABLE KEYS */;
+
+/*!40000 ALTER TABLE `board` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `book`
+--
+
+DROP TABLE IF EXISTS `book`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `book` (
+    `book_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `author` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `img_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `publisher` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    PRIMARY KEY (`book_id`),
+    KEY `FK1wxwagv6cm3vjrxqhmv884hir` (`user_id`),
+    CONSTRAINT `FK1wxwagv6cm3vjrxqhmv884hir` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `book`
+--
+
+LOCK TABLES `book` WRITE;
+/*!40000 ALTER TABLE `book` DISABLE KEYS */;
+/*!40000 ALTER TABLE `book` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `book_category`
+--
+
+DROP TABLE IF EXISTS `book_category`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `book_category` (
+    `category_id` bigint NOT NULL AUTO_INCREMENT,
+    `category_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    PRIMARY KEY (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `book_category`
+--
+
+LOCK TABLES `book_category` WRITE;
+/*!40000 ALTER TABLE `book_category` DISABLE KEYS */;
+/*!40000 ALTER TABLE `book_category` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `book_details`
+--
+
+DROP TABLE IF EXISTS `book_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `book_details` (
+    `end_date` date DEFAULT NULL,
+    `start_date` date DEFAULT NULL,
+    `book_id` bigint DEFAULT NULL,
+    `create_at` datetime(6) DEFAULT NULL,
+    `details_id` bigint NOT NULL AUTO_INCREMENT,
+    `reader_id` bigint DEFAULT NULL,
+    `update_at` datetime(6) DEFAULT NULL,
+    `reading_status` enum('COMPLETED','READING','TO_READ') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    PRIMARY KEY (`details_id`),
+    KEY `FKowm7t5r8qjacwt8wxeag6l1r` (`book_id`),
+    KEY `FKdax2h2xqrtijn47pp3qgb9vry` (`reader_id`),
+    CONSTRAINT `FKdax2h2xqrtijn47pp3qgb9vry` FOREIGN KEY (`reader_id`) REFERENCES `reader` (`reader_id`),
+    CONSTRAINT `FKowm7t5r8qjacwt8wxeag6l1r` FOREIGN KEY (`book_id`) REFERENCES `book` (`book_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `book_details`
+--
+
+LOCK TABLES `book_details` WRITE;
+/*!40000 ALTER TABLE `book_details` DISABLE KEYS */;
+/*!40000 ALTER TABLE `book_details` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `challenge`
+--
+
+DROP TABLE IF EXISTS `challenge`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `challenge` (
+    `challenge_id` bigint NOT NULL AUTO_INCREMENT,
+    `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `description` text COLLATE utf8mb4_unicode_ci,
+    PRIMARY KEY (`challenge_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `challenge`
+--
+
+LOCK TABLES `challenge` WRITE;
+/*!40000 ALTER TABLE `challenge` DISABLE KEYS */;
+/*!40000 ALTER TABLE `challenge` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `challenge_details`
+--
+
+DROP TABLE IF EXISTS `challenge_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `challenge_details` (
-    `details_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `challenge_id` BIGINT NOT NULL,
-    `child_id` BIGINT NULL,
-    `content` TEXT NULL,
-    `success` BOOLEAN NOT NULL DEFAULT FALSE,
-    `completed_at` DATETIME NULL,
+    `details_id` bigint NOT NULL AUTO_INCREMENT,
+    `challenge_id` bigint NOT NULL,
+    `child_id` bigint DEFAULT NULL,
+    `content` text COLLATE utf8mb4_unicode_ci,
+    `success` tinyint(1) NOT NULL DEFAULT '0',
+    `completed_at` datetime DEFAULT NULL,
     PRIMARY KEY (`details_id`),
     KEY `idx_challenge_id` (`challenge_id`),
     KEY `idx_child_id` (`child_id`),
     CONSTRAINT `fk_challenge_details_challenge` FOREIGN KEY (`challenge_id`) REFERENCES `challenge` (`challenge_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_challenge_details_child` FOREIGN KEY (`child_id`) REFERENCES `children` (`child_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Contest Details Table (depends on contest)
+--
+-- Dumping data for table `challenge_details`
+--
+
+LOCK TABLES `challenge_details` WRITE;
+/*!40000 ALTER TABLE `challenge_details` DISABLE KEYS */;
+/*!40000 ALTER TABLE `challenge_details` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `children`
+--
+
+DROP TABLE IF EXISTS `children`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `children` (
+    `child_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `child_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `child_birth` date DEFAULT NULL,
+    `gender` enum('male','female','other') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `birth_order` int DEFAULT NULL COMMENT 'Child order number',
+    `profile_img` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `color` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    PRIMARY KEY (`child_id`),
+    KEY `idx_user_id` (`user_id`),
+    CONSTRAINT `FK8xveadpbqq86cakn73swelcvy` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+    CONSTRAINT `fk_children_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `children`
+--
+
+LOCK TABLES `children` WRITE;
+/*!40000 ALTER TABLE `children` DISABLE KEYS */;
+/*!40000 ALTER TABLE `children` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `contest`
+--
+
+DROP TABLE IF EXISTS `contest`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contest` (
+    `contest_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `content` text COLLATE utf8mb4_unicode_ci,
+    `start_date` datetime DEFAULT NULL,
+    `end_date` datetime DEFAULT NULL,
+    `progress_status` enum('planned','ongoing','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'planned',
+    `image` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    PRIMARY KEY (`contest_id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_progress_status` (`progress_status`),
+    CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `contest`
+--
+
+LOCK TABLES `contest` WRITE;
+/*!40000 ALTER TABLE `contest` DISABLE KEYS */;
+/*!40000 ALTER TABLE `contest` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `contest_details`
+--
+
+DROP TABLE IF EXISTS `contest_details`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contest_details` (
-    `details_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `contest_id` BIGINT NOT NULL,
-    `round` ENUM('round_1', 'round_2', 'round_3', 'final') NOT NULL,
-    `start_prompt` TEXT NULL,
-    `start_date` DATETIME NULL,
-    `end_date` DATETIME NULL,
-    `progress_status` ENUM('pending', 'in_progress', 'completed') NOT NULL DEFAULT 'pending',
+    `details_id` bigint NOT NULL AUTO_INCREMENT,
+    `contest_id` bigint NOT NULL,
+    `round` enum('round_1','round_2','round_3','final') COLLATE utf8mb4_unicode_ci NOT NULL,
+    `start_prompt` text COLLATE utf8mb4_unicode_ci,
+    `start_date` datetime DEFAULT NULL,
+    `end_date` datetime DEFAULT NULL,
+    `progress_status` enum('pending','in_progress','completed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
     PRIMARY KEY (`details_id`),
     KEY `idx_contest_id` (`contest_id`),
     CONSTRAINT `fk_contest_details_contest` FOREIGN KEY (`contest_id`) REFERENCES `contest` (`contest_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Share Board Table (depends on user, package_categories, and share_board_image)
-CREATE TABLE `share_board` (
-    `share_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `category_id` BIGINT NULL,
-    `title` VARCHAR(100) NOT NULL,
-    `content` TEXT NULL,
-    `image_id` BIGINT NULL,
-    `location` VARCHAR(255) NULL,
-    `meet_status` ENUM('scheduled', 'completed', 'cancelled') NULL,
-    `max_participants` INT NULL,
-    `current_participants` INT NOT NULL DEFAULT 1,
-    `datetime` DATETIME NULL,
-    `price` INT NULL DEFAULT 0,
-    `book_status` ENUM('A', 'B', 'C') NOT NULL DEFAULT 'A' COMMENT '등급 : A, B, C',
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`share_id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_category_id` (`category_id`),
-    KEY `idx_image_id` (`image_id`),
-    KEY `idx_datetime` (`datetime`),
-    CONSTRAINT `fk_share_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_share_board_category` FOREIGN KEY (`category_id`) REFERENCES `package_categories` (`category_id`) ON DELETE SET NULL,
-    CONSTRAINT `fk_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- Dumping data for table `contest_details`
+--
 
--- Reply Table (depends on board and user)
-CREATE TABLE `reply` (
-    `reply_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `board_id` BIGINT NOT NULL,
-    `user_id` BIGINT NOT NULL,
-    `content` VARCHAR(500) NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`reply_id`),
-    KEY `idx_board_id` (`board_id`),
-    KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_reply_board` FOREIGN KEY (`board_id`) REFERENCES `board` (`board_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_reply_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+LOCK TABLES `contest_details` WRITE;
+/*!40000 ALTER TABLE `contest_details` DISABLE KEYS */;
+/*!40000 ALTER TABLE `contest_details` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- Contest Result Table (depends on contest)
+--
+-- Table structure for table `contest_result`
+--
+
+DROP TABLE IF EXISTS `contest_result`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `contest_result` (
-    `result_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `contest_id` BIGINT NOT NULL,
-    `title` VARCHAR(255) NULL,
-    `final_content` TEXT NULL,
-    `cover_image` VARCHAR(500) NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `result_id` bigint NOT NULL AUTO_INCREMENT,
+    `contest_id` bigint NOT NULL,
+    `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `final_content` text COLLATE utf8mb4_unicode_ci,
+    `cover_image` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `create_at` datetime DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`result_id`),
     KEY `idx_contest_id` (`contest_id`),
     CONSTRAINT `fk_contest_result_contest` FOREIGN KEY (`contest_id`) REFERENCES `contest` (`contest_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- ========================================
--- Third Level Dependencies
--- ========================================
+--
+-- Dumping data for table `contest_result`
+--
 
--- Dialogue Question Table (depends on dialogue)
-CREATE TABLE `dialogue_question` (
-    `question_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `dialog_id` BIGINT NOT NULL,
-    `question` TEXT NOT NULL,
-    PRIMARY KEY (`question_id`),
-    KEY `idx_dialog_id` (`dialog_id`),
-    CONSTRAINT `fk_dialogue_question_dialogue` FOREIGN KEY (`dialog_id`) REFERENCES `dialogue` (`dialog_id`) ON DELETE CASCADE
+LOCK TABLES `contest_result` WRITE;
+/*!40000 ALTER TABLE `contest_result` DISABLE KEYS */;
+/*!40000 ALTER TABLE `contest_result` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `dialogue`
+--
+
+DROP TABLE IF EXISTS `dialogue`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dialogue` (
+    `dialog_id` bigint NOT NULL AUTO_INCREMENT,
+    `book_id` bigint NOT NULL,
+    `create_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`dialog_id`),
+    KEY `idx_book_id` (`book_id`),
+    CONSTRAINT `fk_dialogue_book` FOREIGN KEY (`book_id`) REFERENCES `Book` (`book_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Story Table (depends on contest_details and user)
-CREATE TABLE `story` (
-    `story_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `details_id` BIGINT NOT NULL,
-    `user_id` BIGINT NOT NULL,
-    `content` TEXT NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `vote_count` INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (`story_id`),
-    KEY `idx_details_id` (`details_id`),
-    KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_story_contest_details` FOREIGN KEY (`details_id`) REFERENCES `contest_details` (`details_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_story_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- Dumping data for table `dialogue`
+--
 
--- Share Request Table (depends on user and share_board)
-CREATE TABLE `share_request` (
-    `request_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `share_id` BIGINT NOT NULL,
-    `content` TEXT NULL,
-    `result_status` ENUM('pending', 'approved', 'rejected', 'cancelled') NOT NULL DEFAULT 'pending',
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`request_id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_share_id` (`share_id`),
-    KEY `idx_result_status` (`result_status`),
-    CONSTRAINT `fk_share_request_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_share_request_share` FOREIGN KEY (`share_id`) REFERENCES `share_board` (`share_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+LOCK TABLES `dialogue` WRITE;
+/*!40000 ALTER TABLE `dialogue` DISABLE KEYS */;
+/*!40000 ALTER TABLE `dialogue` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- Dialogue Answer Table (depends on dialogue, reader, and dialogue_question)
+--
+-- Table structure for table `dialogue_answer`
+--
+
+DROP TABLE IF EXISTS `dialogue_answer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `dialogue_answer` (
-    `answer_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `dialog_id` BIGINT NOT NULL,
-    `reader_id` BIGINT NOT NULL,
-    `question_id` BIGINT NOT NULL,
-    `answer` TEXT NULL,
-    `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `answer_id` bigint NOT NULL AUTO_INCREMENT,
+    `dialog_id` bigint NOT NULL,
+    `reader_id` bigint NOT NULL,
+    `question_id` bigint NOT NULL,
+    `answer` text COLLATE utf8mb4_unicode_ci,
+    `create_at` datetime DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`answer_id`),
     KEY `idx_dialog_id` (`dialog_id`),
     KEY `idx_reader_id` (`reader_id`),
     KEY `idx_question_id` (`question_id`),
     CONSTRAINT `fk_dialogue_answer_dialogue` FOREIGN KEY (`dialog_id`) REFERENCES `dialogue` (`dialog_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_dialogue_answer_reader` FOREIGN KEY (`reader_id`) REFERENCES `reader` (`reader_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_dialogue_answer_question` FOREIGN KEY (`question_id`) REFERENCES `dialogue_question` (`question_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_dialogue_answer_question` FOREIGN KEY (`question_id`) REFERENCES `dialogue_question` (`question_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_dialogue_answer_reader` FOREIGN KEY (`reader_id`) REFERENCES `reader` (`reader_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Vote Table (depends on story and user)
-CREATE TABLE `vote` (
-    `vote_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `story_id` BIGINT NOT NULL,
-    `user_id` BIGINT NOT NULL,
-    `voted_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`vote_id`),
-    KEY `idx_story_id` (`story_id`),
+--
+-- Dumping data for table `dialogue_answer`
+--
+
+LOCK TABLES `dialogue_answer` WRITE;
+/*!40000 ALTER TABLE `dialogue_answer` DISABLE KEYS */;
+/*!40000 ALTER TABLE `dialogue_answer` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `dialogue_question`
+--
+
+DROP TABLE IF EXISTS `dialogue_question`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dialogue_question` (
+    `question_id` bigint NOT NULL AUTO_INCREMENT,
+    `dialog_id` bigint NOT NULL,
+    `question` text COLLATE utf8mb4_unicode_ci NOT NULL,
+    PRIMARY KEY (`question_id`),
+    KEY `idx_dialog_id` (`dialog_id`),
+    CONSTRAINT `fk_dialogue_question_dialogue` FOREIGN KEY (`dialog_id`) REFERENCES `dialogue` (`dialog_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `dialogue_question`
+--
+
+LOCK TABLES `dialogue_question` WRITE;
+/*!40000 ALTER TABLE `dialogue_question` DISABLE KEYS */;
+/*!40000 ALTER TABLE `dialogue_question` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `email_verify`
+--
+
+DROP TABLE IF EXISTS `email_verify`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `email_verify` (
+    `verify_id` bigint NOT NULL AUTO_INCREMENT,
+    `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `expired_at` datetime DEFAULT NULL,
+    PRIMARY KEY (`verify_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `email_verify`
+--
+
+LOCK TABLES `email_verify` WRITE;
+/*!40000 ALTER TABLE `email_verify` DISABLE KEYS */;
+/*!40000 ALTER TABLE `email_verify` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `image`
+--
+
+DROP TABLE IF EXISTS `image`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `image` (
+    `image_id` bigint NOT NULL AUTO_INCREMENT,
+    `file_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `file_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `usage_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    PRIMARY KEY (`image_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `image`
+--
+
+LOCK TABLES `image` WRITE;
+/*!40000 ALTER TABLE `image` DISABLE KEYS */;
+
+/*!40000 ALTER TABLE `image` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notice`
+--
+
+DROP TABLE IF EXISTS `notice`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notice` (
+    `create_at` datetime(6) DEFAULT NULL,
+    `image_id` bigint DEFAULT NULL,
+    `notice_id` bigint NOT NULL AUTO_INCREMENT,
+    `update_at` datetime(6) DEFAULT NULL,
+    `user_id` bigint DEFAULT NULL,
+    `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `content` varchar(2000) COLLATE utf8mb4_unicode_ci NOT NULL,
+    PRIMARY KEY (`notice_id`),
+    KEY `notice_image_FK` (`image_id`),
+    KEY `FKcvf4mh5se36inrxn7xlh2brfv` (`user_id`),
+    CONSTRAINT `FKcvf4mh5se36inrxn7xlh2brfv` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+    CONSTRAINT `notice_image_FK` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notice`
+--
+
+LOCK TABLES `notice` WRITE;
+/*!40000 ALTER TABLE `notice` DISABLE KEYS */;
+/*!40000 ALTER TABLE `notice` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `package`
+--
+
+DROP TABLE IF EXISTS `package`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `package` (
+    `package_id` bigint NOT NULL AUTO_INCREMENT,
+    `category_id` bigint NOT NULL,
+    `user_id` bigint NOT NULL,
+    `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `content` text COLLATE utf8mb4_unicode_ci,
+    `create_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`package_id`),
+    KEY `idx_category_id` (`category_id`),
     KEY `idx_user_id` (`user_id`),
-    CONSTRAINT `fk_vote_story` FOREIGN KEY (`story_id`) REFERENCES `story` (`story_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_vote_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    UNIQUE KEY `uk_story_user` (`story_id`, `user_id`)
+    CONSTRAINT `fk_package_category` FOREIGN KEY (`category_id`) REFERENCES `package_categories` (`category_id`) ON DELETE RESTRICT,
+    CONSTRAINT `fk_package_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Result Images Table (depends on contest_result)
-CREATE TABLE `result_images` (
-    `image_id` BIGINT NOT NULL AUTO_INCREMENT,
-    `result_id` BIGINT NOT NULL,
-    `image_url` VARCHAR(500) NULL,
-    `image_order` INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (`image_id`),
-    KEY `idx_result_id` (`result_id`),
-    CONSTRAINT `fk_result_images_contest_result` FOREIGN KEY (`result_id`) REFERENCES `contest_result` (`result_id`) ON DELETE CASCADE
+--
+-- Dumping data for table `package`
+--
+
+LOCK TABLES `package` WRITE;
+/*!40000 ALTER TABLE `package` DISABLE KEYS */;
+/*!40000 ALTER TABLE `package` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `package_book`
+--
+
+DROP TABLE IF EXISTS `package_book`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `package_book` (
+    `packageBook_id` bigint NOT NULL AUTO_INCREMENT,
+    `book_id` bigint NOT NULL,
+    `package_id` bigint NOT NULL,
+    PRIMARY KEY (`packageBook_id`),
+    KEY `idx_book_id` (`book_id`),
+    KEY `idx_package_id` (`package_id`),
+    CONSTRAINT `fk_package_book_book` FOREIGN KEY (`book_id`) REFERENCES `Book` (`book_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_package_book_package` FOREIGN KEY (`package_id`) REFERENCES `package` (`package_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- Refresh Token Table (depends on user)
+--
+-- Dumping data for table `package_book`
+--
+
+LOCK TABLES `package_book` WRITE;
+/*!40000 ALTER TABLE `package_book` DISABLE KEYS */;
+/*!40000 ALTER TABLE `package_book` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `package_categories`
+--
+
+DROP TABLE IF EXISTS `package_categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `package_categories` (
+    `category_id` bigint NOT NULL AUTO_INCREMENT,
+    `category_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    PRIMARY KEY (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `package_categories`
+--
+
+LOCK TABLES `package_categories` WRITE;
+/*!40000 ALTER TABLE `package_categories` DISABLE KEYS */;
+/*!40000 ALTER TABLE `package_categories` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reader`
+--
+
+DROP TABLE IF EXISTS `reader`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reader` (
+    `reader_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `type` enum('adult','child') COLLATE utf8mb4_unicode_ci NOT NULL,
+    PRIMARY KEY (`reader_id`),
+    KEY `idx_user_id` (`user_id`),
+    CONSTRAINT `fk_reader_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `FKi735vllfgyuyri1r086ox6fsr` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reader`
+--
+
+LOCK TABLES `reader` WRITE;
+/*!40000 ALTER TABLE `reader` DISABLE KEYS */;
+/*!40000 ALTER TABLE `reader` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `refresh_token`
+--
+
+DROP TABLE IF EXISTS `refresh_token`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `refresh_token` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL,
-    `token` VARCHAR(255) NOT NULL,
-    `expiry_date` DATETIME NOT NULL,
+    `expiry_date` datetime(6) NOT NULL,
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `token` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_id` (`user_id`),
-    CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+    UNIQUE KEY `UKf95ixxe7pa48ryn1awmh2evt7` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `refresh_token`
+--
+
+LOCK TABLES `refresh_token` WRITE;
+/*!40000 ALTER TABLE `refresh_token` DISABLE KEYS */;
+/*!40000 ALTER TABLE `refresh_token` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reply`
+--
+
+DROP TABLE IF EXISTS `reply`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reply` (
+     `board_id` bigint NOT NULL,
+     `create_at` datetime(6) DEFAULT NULL,
+     `reply_id` bigint NOT NULL AUTO_INCREMENT,
+     `update_at` datetime(6) DEFAULT NULL,
+     `user_id` bigint NOT NULL,
+     `content` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+     PRIMARY KEY (`reply_id`),
+     KEY `FKcs9hiip0bv9xxfrgoj0lwv2dt` (`board_id`),
+     KEY `FKapyyxlgntertu5okpkr685ir9` (`user_id`),
+     CONSTRAINT `FKapyyxlgntertu5okpkr685ir9` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+     CONSTRAINT `FKcs9hiip0bv9xxfrgoj0lwv2dt` FOREIGN KEY (`board_id`) REFERENCES `board` (`board_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reply`
+--
+
+LOCK TABLES `reply` WRITE;
+/*!40000 ALTER TABLE `reply` DISABLE KEYS */;
+/*!40000 ALTER TABLE `reply` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `result_images`
+--
+
+DROP TABLE IF EXISTS `result_images`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `result_images` (
+     `image_id` bigint NOT NULL AUTO_INCREMENT,
+     `result_id` bigint NOT NULL,
+     `image_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+     `image_order` int NOT NULL DEFAULT '0',
+     PRIMARY KEY (`image_id`),
+     KEY `idx_result_id` (`result_id`),
+     CONSTRAINT `fk_result_images_contest_result` FOREIGN KEY (`result_id`) REFERENCES `contest_result` (`result_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `result_images`
+--
+
+LOCK TABLES `result_images` WRITE;
+/*!40000 ALTER TABLE `result_images` DISABLE KEYS */;
+/*!40000 ALTER TABLE `result_images` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `share_board`
+--
+
+DROP TABLE IF EXISTS `share_board`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `share_board` (
+   `share_id` bigint NOT NULL AUTO_INCREMENT,
+   `user_id` bigint NOT NULL,
+   `category_id` bigint DEFAULT NULL,
+   `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+   `content` text COLLATE utf8mb4_unicode_ci,
+   `image_id` bigint DEFAULT NULL,
+   `location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+   `meet_status` enum('scheduled','completed','cancelled') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+   `max_participants` int DEFAULT NULL,
+   `current_participants` int NOT NULL DEFAULT '1',
+   `datetime` datetime DEFAULT NULL,
+   `price` int DEFAULT '0',
+   `book_status` enum('A','B','C') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'A' COMMENT '등급 : A, B, C',
+   `create_at` datetime DEFAULT CURRENT_TIMESTAMP,
+   `update_at` datetime DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`share_id`),
+   KEY `idx_user_id` (`user_id`),
+   KEY `idx_category_id` (`category_id`),
+   KEY `idx_image_id` (`image_id`),
+   KEY `idx_datetime` (`datetime`),
+   CONSTRAINT `fk_share_board_category` FOREIGN KEY (`category_id`) REFERENCES `package_categories` (`category_id`) ON DELETE SET NULL,
+   CONSTRAINT `fk_share_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
+   CONSTRAINT `share_board_image_FK` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `share_board`
+--
+
+LOCK TABLES `share_board` WRITE;
+/*!40000 ALTER TABLE `share_board` DISABLE KEYS */;
+/*!40000 ALTER TABLE `share_board` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `share_request`
+--
+
+DROP TABLE IF EXISTS `share_request`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `share_request` (
+     `request_id` bigint NOT NULL AUTO_INCREMENT,
+     `user_id` bigint NOT NULL,
+     `share_id` bigint NOT NULL,
+     `content` text COLLATE utf8mb4_unicode_ci,
+     `result_status` enum('pending','approved','rejected','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+     `create_at` datetime DEFAULT CURRENT_TIMESTAMP,
+     `update_at` datetime DEFAULT CURRENT_TIMESTAMP,
+     PRIMARY KEY (`request_id`),
+     KEY `idx_user_id` (`user_id`),
+     KEY `idx_share_id` (`share_id`),
+     KEY `idx_result_status` (`result_status`),
+     CONSTRAINT `fk_share_request_share` FOREIGN KEY (`share_id`) REFERENCES `share_board` (`share_id`) ON DELETE CASCADE,
+     CONSTRAINT `fk_share_request_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `share_request`
+--
+
+LOCK TABLES `share_request` WRITE;
+/*!40000 ALTER TABLE `share_request` DISABLE KEYS */;
+/*!40000 ALTER TABLE `share_request` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `story`
+--
+
+DROP TABLE IF EXISTS `story`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `story` (
+     `story_id` bigint NOT NULL AUTO_INCREMENT,
+     `details_id` bigint NOT NULL,
+     `user_id` bigint NOT NULL,
+     `content` text COLLATE utf8mb4_unicode_ci,
+     `create_at` datetime DEFAULT CURRENT_TIMESTAMP,
+     `update_at` datetime DEFAULT CURRENT_TIMESTAMP,
+     `vote_count` int NOT NULL DEFAULT '0',
+     PRIMARY KEY (`story_id`),
+     KEY `idx_details_id` (`details_id`),
+     KEY `idx_user_id` (`user_id`),
+     CONSTRAINT `fk_story_contest_details` FOREIGN KEY (`details_id`) REFERENCES `contest_details` (`details_id`) ON DELETE CASCADE,
+     CONSTRAINT `fk_story_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `story`
+--
+
+LOCK TABLES `story` WRITE;
+/*!40000 ALTER TABLE `story` DISABLE KEYS */;
+/*!40000 ALTER TABLE `story` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user`
+--
+
+DROP TABLE IF EXISTS `user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user` (
+    `user_id` bigint NOT NULL AUTO_INCREMENT,
+    `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    `username` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    `birth` date DEFAULT NULL,
+    `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `nickname` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `color` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `profile_img` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+    `role` enum('ADMIN','USER') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',
+    `reset_token` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `reset_token_expiry` datetime DEFAULT NULL,
+    PRIMARY KEY (`user_id`),
+    UNIQUE KEY `email` (`email`),
+    UNIQUE KEY `UKob8kqyqqgmefl0aco34akdtpe` (`email`),
+    UNIQUE KEY `nickname` (`nickname`),
+    UNIQUE KEY `UKn4swgcf30j6bmtb4l4cjryuym` (`nickname`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user`
+--
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (2,'admin1@admin.com','admin1','$2a$10$UX7LPes/mDVlBOlpoZRl/u/6wRLongxZVEBrJN4a6XGdBXxjqL5Km','2000-01-01','010-1111-1111','admin1','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL),
-                          (3,'admin2@admin.com','admin2','$2a$10$rP.0wpQ5KDjGhqvAceh5YO.poPHgikyHNlmMaLMJ.2rtZ9LX.2XG.','2000-01-01','010-1111-1111','admin2','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL),
-                          (4,'admin3@admin.com','admin3','$2a$10$tDI0SWtroMdOpduPIQd2zOKVnvCDzx1qK7KSo.ZzrsF6s4IQE5W66','2000-01-01','010-1111-1111','admin3','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL);
+INSERT INTO `user` VALUES (2,'admin1@admin.com','admin1','$2a$10$UX7LPes/mDVlBOlpoZRl/u/6wRLongxZVEBrJN4a6XGdBXxjqL5Km','2000-01-01','010-1111-1111','admin1','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL);
+INSERT INTO `user` VALUES (3,'admin2@admin.com','admin2','$2a$10$rP.0wpQ5KDjGhqvAceh5YO.poPHgikyHNlmMaLMJ.2rtZ9LX.2XG.','2000-01-01','010-1111-1111','admin2','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL);
+INSERT INTO `user` VALUES (4,'admin3@admin.com','admin3','$2a$10$tDI0SWtroMdOpduPIQd2zOKVnvCDzx1qK7KSo.ZzrsF6s4IQE5W66','2000-01-01','010-1111-1111','admin3','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
+--
+-- Table structure for table `vote`
+--
 
-LOCK TABLES `children` WRITE;
-/*!40000 ALTER TABLE `children` DISABLE KEYS */;
-INSERT INTO `children` VALUES (1, 2,'child1', '2018-05-15', 'M', 1, 'http://example.com/profiles/example.jpg', '#FF5733'),
-                              (2, 2,'child2', '2019-05-15', 'F', 2, 'http://example.com/profiles/example.jpg', '#FF5733'),
-                              (3, 3,'child3', '2017-05-15', 'M', 1, 'http://example.com/profiles/example.jpg', '#FF5733');
-/*!40000 ALTER TABLE `children` ENABLE KEYS */;
+DROP TABLE IF EXISTS `vote`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vote` (
+    `vote_id` bigint NOT NULL AUTO_INCREMENT,
+    `story_id` bigint NOT NULL,
+    `user_id` bigint NOT NULL,
+    `voted_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`vote_id`),
+    UNIQUE KEY `uk_story_user` (`story_id`,`user_id`),
+    KEY `idx_story_id` (`story_id`),
+    KEY `idx_user_id` (`user_id`),
+    CONSTRAINT `fk_vote_story` FOREIGN KEY (`story_id`) REFERENCES `story` (`story_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_vote_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `vote`
+--
+
+LOCK TABLES `vote` WRITE;
+/*!40000 ALTER TABLE `vote` DISABLE KEYS */;
+/*!40000 ALTER TABLE `vote` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'capstone'
+--
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-11-26  1:28:45

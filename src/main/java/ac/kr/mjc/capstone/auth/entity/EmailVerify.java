@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "email_verify")
+@Table(name = "email_verify", indexes = @Index(name = "idx_email_verify_expired_at", columnList = "expired_at"))
 @Builder
 public class EmailVerify {
     @Id

@@ -271,7 +271,7 @@ CREATE TABLE `children` (
     `user_id` bigint NOT NULL,
     `child_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
     `child_birth` date DEFAULT NULL,
-    `gender` enum('MALE','FEMALE','OTHER') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `gender` enum('M','F') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `birth_order` int DEFAULT NULL COMMENT 'Child order number',
     `profile_img` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `color` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,

@@ -135,10 +135,17 @@ public class BookServiceImpl implements BookService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        ImageFileEntity newImage = null;
+        ImageFileEntity newImage = book.getImage(); // 기본값: 기존 이미지 유지
+
         if (bookRequest.getImageId() != null) {
-            newImage = fileRepository.findById(bookRequest.getImageId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+            if (bookRequest.getImageId() == 0L) {
+                // imageId가 0이면 이미지 제거
+                newImage = null;
+            } else {
+                // imageId가 양수면 해당 이미지로 변경
+                newImage = fileRepository.findById(bookRequest.getImageId())
+                        .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+            }
         }
 
         book.update(
@@ -149,7 +156,7 @@ public class BookServiceImpl implements BookService {
                 bookRequest.getPublicationYear() != null ? bookRequest.getPublicationYear() : book.getPublicationYear(),
                 bookRequest.getCoverUrl() != null ? bookRequest.getCoverUrl() : book.getCoverUrl(),
                 bookRequest.getDescription() != null ? bookRequest.getDescription() : book.getDescription(),
-                newImage != null ? newImage : book.getImage()
+                newImage  // 삼항연산자 제거
         );
 
         List<BookDetailsUpdateRequest> requestedDetails = bookRequest.getBookDetailsUpdate();
@@ -283,12 +290,14 @@ public class BookServiceImpl implements BookService {
                 ChildrenEntity childrenEntity = childrenRepository.findById(request.getChildId())
                         .orElseThrow(() -> new CustomException(ErrorCode.CHILD_NOT_FOUND));
 
-                readerRepository.findByChildrenEntity_ChildId(request.getChildId())
-                        .ifPresent(reader1 -> {
-                            throw new CustomException(ErrorCode.READER_ALREADY_EXISTS);
-                        });
+                // 기존 Reader가 있으면 재사용 (고아 Reader 문제 해결)
+                Optional<Reader> existingReader = readerRepository.findByChildrenEntity_ChildId(request.getChildId());
+                if (existingReader.isPresent()) {
+                    return existingReader.get();
+                }
 
                 if (!childrenEntity.getUserEntity().equals(userEntity)) {
+
                     throw new CustomException(ErrorCode.UNAUTHORIZED);
                 }
 

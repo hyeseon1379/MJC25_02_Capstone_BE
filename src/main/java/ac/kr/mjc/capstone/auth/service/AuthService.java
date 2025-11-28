@@ -43,6 +43,11 @@ public class AuthService {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+        // 소셜 로그인 사용자 체크
+        if (user.isSocialUser()) {
+            throw new CustomException(ErrorCode.SOCIAL_USER_CANNOT_CHANGE_PASSWORD);
+        }
+
         // 6자리 인증 코드 생성
         Random random = new Random();
         int code = 100000 + random.nextInt(900000);
@@ -129,6 +134,11 @@ public class AuthService {
     public void resetPasswordWithToken(Long userId, String newPassword) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 소셜 로그인 사용자 체크
+        if (user.isSocialUser()) {
+            throw new CustomException(ErrorCode.SOCIAL_USER_CANNOT_CHANGE_PASSWORD);
+        }
 
         // 새 비밀번호 암호화 및 저장
         user.updatePassword(passwordEncoder.encode(newPassword));

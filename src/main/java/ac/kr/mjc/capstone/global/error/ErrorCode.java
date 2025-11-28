@@ -26,6 +26,7 @@ public enum ErrorCode {
     DUPLICATE_USERNAME("USER003", "이미 사용 중인 사용자 이름입니다"),
     USER_VERIFICATION_FAILED("USER004", "사용자 인증에 실패했습니다"),
     PASSWORD_MISMATCH("USER005", "비밀번호가 일치하지 않습니다"),
+    SOCIAL_USER_CANNOT_CHANGE_PASSWORD("USER006", "소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다"),
 
     // Board
     BOARD_NOT_FOUND("BOARD001", "게시글을 찾을 수 없습니다"),

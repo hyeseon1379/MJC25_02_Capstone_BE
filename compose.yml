@@ -25,7 +25,7 @@ services:
       - capstone
 
   backend:
-    image: jhh0101/capstone:v1.0.19
+    image: jhh0101/capstone:v1.0.21
     container_name: backend_container
     ports:
       # 로컬 PC의 18888 포트 -> 컨테이너의 8082 포트로 연결
@@ -42,6 +42,14 @@ services:
       # 📧 이메일 설정 추가
       - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+
+      # 🔐 OAuth2 설정
+      - APP_BASE_URL=${APP_BASE_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
+      - NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
+      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
+      - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
 
       # DB 접속 URL (Host는 Docker 네트워크 상의 'mysql' 서비스 이름)
       - MYSQL_URL=jdbc:mysql://mysql:3306/capstone?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul

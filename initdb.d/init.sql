@@ -61,11 +61,14 @@ CREATE TABLE `user` (
                         `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
                         `profile_img` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
                         `role` enum('ADMIN','USER') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USER',
+                        `provider` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'LOCAL',
+                        `provider_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
                         `reset_token` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
                         `reset_token_expiry` datetime DEFAULT NULL,
                         PRIMARY KEY (`user_id`),
                         UNIQUE KEY `email` (`email`),
-                        UNIQUE KEY `nickname` (`nickname`)
+                        UNIQUE KEY `nickname` (`nickname`),
+                        UNIQUE KEY `uk_provider_provider_id` (`provider`, `provider_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: refresh_token
@@ -118,6 +121,8 @@ CREATE TABLE `children` (
                             `birth_order` INT NULL COMMENT 'Child order number',
                             `profile_img` VARCHAR(255) NULL,
                             `color` VARCHAR(10) NULL,
+                            `provider` varchar(20) NULL,
+                            `provider_id` varchar(255) NULL,
                             PRIMARY KEY (`child_id`),
                             KEY `idx_user_id` (`user_id`),
                             CONSTRAINT `fk_children_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
@@ -463,10 +468,10 @@ CREATE TABLE `result_images` (
 -- ========================================
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` (`user_id`, `email`, `username`, `password`, `birth`, `phone`, `nickname`, `color`, `address`, `profile_img`, `role`, `reset_token`, `reset_token_expiry`)
-VALUES (1,'admin1@admin.com','admin1','$2a$10$UX7LPes/mDVlBOlpoZRl/u/6wRLongxZVEBrJN4a6XGdBXxjqL5Km','2000-01-01','010-1111-1111','admin1','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL),
-       (2,'admin2@admin.com','admin2','$2a$10$rP.0wpQ5KDjGhqvAceh5YO.poPHgikyHNlmMaLMJ.2rtZ9LX.2XG.','2000-01-01','010-1111-1111','admin2','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL),
-       (3,'admin3@admin.com','admin3','$2a$10$tDI0SWtroMdOpduPIQd2zOKVnvCDzx1qK7KSo.ZzrsF6s4IQE5W66','2000-01-01','010-1111-1111','admin3','#FFFFFF','admin',NULL,'ADMIN',NULL,NULL);
+INSERT INTO `user` (`user_id`, `email`, `username`, `password`, `birth`, `phone`, `nickname`, `color`, `address`, `profile_img`, `role`, `provider`, `provider_id`, `reset_token`, `reset_token_expiry`)
+VALUES (1,'admin1@admin.com','admin1','$2a$10$UX7LPes/mDVlBOlpoZRl/u/6wRLongxZVEBrJN4a6XGdBXxjqL5Km','2000-01-01','010-1111-1111','admin1','#FFFFFF','admin',NULL,'ADMIN','LOCAL',NULL,NULL,NULL),
+       (2,'admin2@admin.com','admin2','$2a$10$rP.0wpQ5KDjGhqvAceh5YO.poPHgikyHNlmMaLMJ.2rtZ9LX.2XG.','2000-01-01','010-1111-1111','admin2','#FFFFFF','admin',NULL,'ADMIN','LOCAL',NULL,NULL,NULL),
+       (3,'admin3@admin.com','admin3','$2a$10$tDI0SWtroMdOpduPIQd2zOKVnvCDzx1qK7KSo.ZzrsF6s4IQE5W66','2000-01-01','010-1111-1111','admin3','#FFFFFF','admin',NULL,'ADMIN','LOCAL',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 

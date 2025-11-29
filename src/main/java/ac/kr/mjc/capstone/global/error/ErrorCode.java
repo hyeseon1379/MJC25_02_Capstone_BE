@@ -56,7 +56,14 @@ public enum ErrorCode {
     READER_NOT_FOUND("READER001","독자를 찾을 수 없습니다."),
     UNAUTHORIZED_READER_OWNERSHIP("READER002", "reader에 해당 user가 속해있지 않습니다."),
     READER_CHILD_MISMATCH("READER003","reader와 child가 일치하지 않습니다."),
-    READER_ALREADY_EXISTS("READER003","해당 자녀에 연결된 독자 정보가 이미 존재합니다.");
+    READER_ALREADY_EXISTS("READER003","해당 자녀에 연결된 독자 정보가 이미 존재합니다."),
+
+    //contest
+    CONTEST_NOT_FOUND("CONTEST001","대회를 찾을 수 없습니다."),
+
+    //contestDetails
+    CONTEST_DETAILS_NOT_FOUND("CONTEST_DETAILS001","대회 상세를 찾을 수 없습니다.");
+
 
     private final String code;
     private final String message;

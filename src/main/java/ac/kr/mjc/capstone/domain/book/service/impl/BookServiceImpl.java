@@ -199,7 +199,7 @@ public class BookServiceImpl implements BookService {
             throw new CustomException(ErrorCode.UNAUTHORIZED, "삭제 권한이 없는 도서가 목록에 포함되어 있습니다.");
         }
 
-       bookRepository.deleteAll(books);;
+       bookRepository.deleteAll(books);
     }
 
     @Override

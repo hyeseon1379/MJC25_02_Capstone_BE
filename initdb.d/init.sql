@@ -306,7 +306,7 @@ CREATE TABLE `contest_details` (
                                    `start_prompt` TEXT NULL,
                                    `start_date` DATETIME NULL,
                                    `end_date` DATETIME NULL,
-                                   `progress_status` ENUM('PLANNED', 'ONGOING', 'COMPLETED','CANCELLED') NOT NULL DEFAULT 'PLANNED',
+                                   `progress_status` ENUM('PLANNED', 'ONGOING', 'COMPLETED','VOTING', 'CANCELLED') NOT NULL DEFAULT 'PLANNED',
                                    PRIMARY KEY (`details_id`),
                                    KEY `idx_contest_id` (`contest_id`),
                                    CONSTRAINT `fk_contest_details_contest` FOREIGN KEY (`contest_id`) REFERENCES `contest` (`contest_id`) ON DELETE CASCADE

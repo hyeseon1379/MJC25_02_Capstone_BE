@@ -11,6 +11,8 @@ import ac.kr.mjc.capstone.global.error.CustomException;
 import ac.kr.mjc.capstone.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +41,7 @@ public class BoardService {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .user(userEntity)
-                .boardImage(request.getBoardImage())
+                .imageFile(request.getImageFile())
                 .build();
 
         BoardEntity savedBoard = boardRepository.save(boardEntity);
@@ -62,16 +64,14 @@ public class BoardService {
     }
 
     /**
-     * Read - 게시글 전체 조회
+     * Read - 게시글 전체 조회(검색)
      */
     @Transactional(readOnly = true)
-    public List<BoardResponse> getAllBoards() {
-        List<BoardEntity> boards = boardRepository.findAll();
-        log.info("Total boards retrieved: {}", boards.size());
+    public Page<BoardResponse> findAllByTitleContaining(Pageable pageable, String title) {
+        Page<BoardEntity> boards = boardRepository.findAllByTitleContaining(title, pageable);
+        log.info("Total boards retrieved: {}", boards.getTotalElements());
 
-        return boards.stream()
-                .map(BoardResponse::from)
-                .collect(Collectors.toList());
+        return boards.map(BoardResponse::from);
     }
 
     /**
@@ -92,7 +92,7 @@ public class BoardService {
         boardEntity.updateBoard(
                 request.getTitle(),
                 request.getContent(),
-                request.getBoardImage()
+                request.getImageFile()
         );
 
         log.info("Board updated: boardId={}, title={}, userId={}",

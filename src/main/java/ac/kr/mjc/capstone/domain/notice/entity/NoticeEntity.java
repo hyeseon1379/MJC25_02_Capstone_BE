@@ -1,13 +1,13 @@
 package ac.kr.mjc.capstone.domain.notice.entity;
 
-import ac.kr.mjc.capstone.domain.boardimage.entity.BoardImageEntity;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.global.base.BaseEntity;
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "notice")
+@Table(name = "notice", indexes = @Index(name = "idx_notice_title", columnList = "title"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -29,18 +29,18 @@ public class NoticeEntity extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "image_id")
-    private BoardImageEntity boardImage;
+    private ImageFileEntity fileEntity;
 
     // 공지사항 수정 메서드
-    public void updateNotice(String title, String content, BoardImageEntity boardImage) {
+    public void updateNotice(String title, String content, ImageFileEntity fileEntity) {
         if (title != null) {
             this.title = title;
         }
         if (content != null) {
             this.content = content;
         }
-        if (boardImage != null) {
-            this.boardImage = boardImage;
+        if (fileEntity != null) {
+            this.fileEntity = fileEntity;
         }
     }
 }

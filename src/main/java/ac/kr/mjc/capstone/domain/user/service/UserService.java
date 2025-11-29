@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -122,6 +123,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long userId, String password) {
+
         // 사용자 조회
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -135,7 +137,22 @@ public class UserService {
         refreshTokenRepository.deleteByUserId(userId);
 
         // 사용자 삭제
-        userRepository.delete(userEntity);
+        userRepository.save(UserEntity.builder()
+                        .userId(userId)
+                        .email(userId.toString())
+                        .username("탈퇴한사용자")
+                        .password("")
+                        .birth(null)
+                        .phone(null)
+                        .nickname("탈퇴한사용자_"+userId)
+                        .color(null)
+                        .address(null)
+                        .profileImg(null)
+                        .role(Role.USER)
+                        .resetToken(null)
+                        .resetTokenExpiry(null)
+                        .build()
+        );
 
         // 자녀 삭제
         childrenRepository.deleteAllByUserEntity_UserId(userId);

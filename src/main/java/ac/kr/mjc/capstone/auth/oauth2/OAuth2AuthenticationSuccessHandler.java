@@ -5,6 +5,7 @@ import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
 import ac.kr.mjc.capstone.auth.service.JwtService;
 import ac.kr.mjc.capstone.global.config.JwtProperties;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProperties jwtProperties;
 
-    @Value("${app.frontend-url:http://localhost:8080}")
+    @Value("${app.frontend-url:http://localhost:5500}")
     private String frontendUrl;
 
     @Override
@@ -46,12 +47,19 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         // RefreshToken DB 저장
         saveOrUpdateRefreshToken(userId, refreshToken);
 
+        // RefreshToken을 쿠키에 설정
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(false);  // 로컬 개발용 (배포 시 true로 변경)
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge((int) (jwtProperties.getRefreshTokenExpiration() / 1000));  // 초 단위
+        response.addCookie(refreshTokenCookie);
+
         log.info("OAuth2 로그인 성공 - UserId: {}, Email: {}", userId, email);
 
-        // 프론트엔드로 리다이렉트 (토큰을 쿼리 파라미터로 전달)
-        String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth2/redirect")
+        // 프론트엔드로 리다이렉트 (accessToken만 쿼리 파라미터로 전달)
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login.html")
                 .queryParam("accessToken", accessToken)
-                .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);

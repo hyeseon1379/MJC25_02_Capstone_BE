@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
-    @Value("${app.frontend-url:http://localhost:3000}")
+    @Value("${app.frontend-url:http://localhost:5500}")
     private String frontendUrl;
 
     @Override
@@ -27,8 +27,9 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
         
         log.error("OAuth2 로그인 실패: {}", exception.getMessage());
 
-        String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth2/redirect")
-                .queryParam("error", URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8))
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login.html")
+                .queryParam("error", "oauth2_error")
+                .queryParam("error_message", URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8))
                 .build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);

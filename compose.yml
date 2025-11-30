@@ -25,14 +25,14 @@ services:
       - capstone
 
   backend:
-    image: jhh0101/capstone:v1.0.22
+    image: jhh0101/capstone:v1.0.23
     container_name: backend_container
     ports:
       # 로컬 PC의 18888 포트 -> 컨테이너의 8082 포트로 연결
       - "18888:8082"
     environment:
       - TZ=Asia/Seoul
-      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_PROFILES_ACTIVE=prod
 
       # 🎯 .env 값 주입 (application.yml의 Placeholder와 일치)
       - MYSQL_USER=${MYSQL_USER}
@@ -58,6 +58,20 @@ services:
       - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect # 명시
     depends_on:
       - mysql
+    networks:
+      - capstone
+
+  frontend:
+    image: willy0126/capstone-fe:v1.0
+    build:
+      context: .
+
+    container_name: frontend_container
+    ports:
+      - "8080:80"
+#    volumes: #./Front-End:/usr/share/nginx/html
+    depends_on:
+      - backend
     networks:
       - capstone
 

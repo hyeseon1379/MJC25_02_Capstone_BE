@@ -41,6 +41,27 @@ public class AuthController {
 
     }
 
+    /**
+     * OAuth2 일회용 코드를 토큰으로 교환
+     * 보안 개선: URL에 AccessToken 노출 방지
+     */
+    @PostMapping("/oauth2/token")
+    public ApiResponse<String> exchangeOAuth2Code(@Valid @RequestBody OAuth2TokenRequest request,
+                                                   HttpServletResponse response) {
+        TokenResponse tokenResponse = authService.exchangeOAuth2CodeForTokens(request.getCode());
+
+        // RefreshToken을 HttpOnly 쿠키로 설정
+        ResponseCookie responseCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
+                .path("/")
+                .secure(true)
+                .sameSite("None")
+                .httpOnly(true)
+                .build();
+
+        response.setHeader("Set-Cookie", responseCookie.toString());
+        return ApiResponse.success("OAuth2 토큰 발급 성공", tokenResponse.getAccessToken());
+    }
+
     @PostMapping("/refresh")
     public ApiResponse<String> refresh(@Valid @RequestBody RefreshTokenRequest request, HttpServletResponse response) {
         TokenResponse tokenResponse = authService.refreshAccessToken(request.getRefreshToken());

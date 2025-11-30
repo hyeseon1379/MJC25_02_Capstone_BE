@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 기본 콘솔 출력 설정 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 프로덕션용 파일 출력 설정 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 개발 환경 설정 -->
+    <springProfile name="default,dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        
+        <!-- 개발 환경에서도 토큰 관련 DEBUG 로그는 출력하지 않음 -->
+        <logger name="ac.kr.mjc.capstone.auth" level="INFO"/>
+    </springProfile>
+
+    <!-- 프로덕션 환경 설정 -->
+    <springProfile name="prod">
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+        
+        <!-- 프로덕션에서 인증 관련 로그 최소화 (토큰 노출 방지) -->
+        <logger name="ac.kr.mjc.capstone.auth" level="WARN"/>
+        <logger name="ac.kr.mjc.capstone.auth.service.JwtService" level="ERROR"/>
+        <logger name="ac.kr.mjc.capstone.auth.service.OAuth2AuthCodeService" level="WARN"/>
+        
+        <!-- Spring Security OAuth2 관련 로그 최소화 -->
+        <logger name="org.springframework.security.oauth2" level="WARN"/>
+    </springProfile>
+</configuration>

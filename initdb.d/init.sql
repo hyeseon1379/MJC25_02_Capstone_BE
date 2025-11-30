@@ -31,6 +31,7 @@ DROP TABLE IF EXISTS `challenge`;
 DROP TABLE IF EXISTS `package_categories`;
 DROP TABLE IF EXISTS `image`;
 DROP TABLE IF EXISTS `refresh_token`;
+DROP TABLE IF EXISTS `oauth2_auth_codes`;
 DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS `email_verify`;
 
@@ -80,6 +81,19 @@ CREATE TABLE `refresh_token` (
                                  PRIMARY KEY (`id`),
                                  UNIQUE KEY `uk_user_id` (`user_id`),
                                  CONSTRAINT `fk_refresh_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: oauth2_auth_codes (OAuth2 일회용 인증 코드)
+CREATE TABLE `oauth2_auth_codes` (
+                                 `id` bigint NOT NULL AUTO_INCREMENT,
+                                 `code` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+                                 `user_id` bigint NOT NULL,
+                                 `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+                                 `expiry_date` datetime(6) NOT NULL,
+                                 `used` tinyint(1) NOT NULL DEFAULT 0,
+                                 PRIMARY KEY (`id`),
+                                 UNIQUE KEY `uk_code` (`code`),
+                                 KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: package_categories

@@ -1,11 +1,7 @@
 package ac.kr.mjc.capstone.auth.oauth2;
 
-import ac.kr.mjc.capstone.auth.entity.RefreshToken;
-import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
-import ac.kr.mjc.capstone.auth.service.JwtService;
-import ac.kr.mjc.capstone.global.config.JwtProperties;
+import ac.kr.mjc.capstone.auth.service.OAuth2AuthCodeService;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,16 +13,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
+/**
+ * OAuth2 인증 성공 핸들러
+ * 
+ * 보안 개선: AccessToken을 URL에 직접 노출하지 않고,
+ * 일회용 코드(Authorization Code)를 전달하여 프론트엔드에서 토큰 교환
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JwtService jwtService;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtProperties jwtProperties;
+    private final OAuth2AuthCodeService authCodeService;
 
     @Value("${app.frontend-url:http://localhost:5500}")
     private String frontendUrl;
@@ -40,46 +39,16 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         Long userId = oAuth2User.getUserId();
         String email = oAuth2User.getEmail();
 
-        // JWT 토큰 생성
-        String accessToken = jwtService.generateAccessToken(userId, email);
-        String refreshToken = jwtService.generateRefreshToken(userId);
+        // 일회용 코드 생성 (AccessToken 대신)
+        String authCode = authCodeService.generateAuthCode(userId, email);
 
-        // RefreshToken DB 저장
-        saveOrUpdateRefreshToken(userId, refreshToken);
+        log.info("OAuth2 로그인 성공 - UserId: {}", userId);
 
-        // RefreshToken을 쿠키에 설정
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false);  // 로컬 개발용 (배포 시 true로 변경)
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge((int) (jwtProperties.getRefreshTokenExpiration() / 1000));  // 초 단위
-        response.addCookie(refreshTokenCookie);
-
-        log.info("OAuth2 로그인 성공 - UserId: {}, Email: {}", userId, email);
-
-        // 프론트엔드로 리다이렉트 (accessToken만 쿼리 파라미터로 전달)
+        // 프론트엔드로 리다이렉트 (일회용 코드만 전달 - 보안 강화)
         String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login.html")
-                .queryParam("accessToken", accessToken)
+                .queryParam("code", authCode)
                 .build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
-    }
-
-    private void saveOrUpdateRefreshToken(Long userId, String token) {
-        LocalDateTime expiryDate = LocalDateTime.now()
-                .plusSeconds(jwtProperties.getRefreshTokenExpiration() / 1000);
-
-        refreshTokenRepository.findByUserId(userId)
-                .ifPresentOrElse(
-                        existingToken -> existingToken.updateToken(token, expiryDate),
-                        () -> {
-                            RefreshToken newToken = RefreshToken.builder()
-                                    .userId(userId)
-                                    .token(token)
-                                    .expiryDate(expiryDate)
-                                    .build();
-                            refreshTokenRepository.save(newToken);
-                        }
-                );
     }
 }

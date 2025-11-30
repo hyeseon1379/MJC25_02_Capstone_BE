@@ -91,10 +91,10 @@ file:
 jwt:
   # 환경 변수에서 값 주입
   secret: ${JWT_SECRET_KEY}
-  access-token-expiration: 3600000
+  access-token-expiration: 900000
   refresh-token-expiration: 604800000
 
 # App Settings
 app:
-  base-url: ${APP_BASE_URL:http://localhost:8082}
-  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  base-url: ${APP_BASE_URL:http://localhost:18888}
+  frontend-url: ${FRONTEND_URL:http://localhost:8080}

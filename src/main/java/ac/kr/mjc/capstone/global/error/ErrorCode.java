@@ -62,7 +62,10 @@ public enum ErrorCode {
     CONTEST_NOT_FOUND("CONTEST001","대회를 찾을 수 없습니다."),
 
     //contestDetails
-    CONTEST_DETAILS_NOT_FOUND("CONTEST_DETAILS001","대회 상세를 찾을 수 없습니다.");
+    CONTEST_DETAILS_NOT_FOUND("CONTEST_DETAILS001","대회 상세를 찾을 수 없습니다."),
+
+    //story
+    STORY_NOT_FOUND("STORY001", "이어쓰기를 찾을 수 없습니다.");
 
 
     private final String code;

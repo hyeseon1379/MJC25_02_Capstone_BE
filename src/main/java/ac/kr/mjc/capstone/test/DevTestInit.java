@@ -7,12 +7,11 @@ import ac.kr.mjc.capstone.domain.book.repository.ReaderRepository;
 import ac.kr.mjc.capstone.domain.children.entity.ChildGender;
 import ac.kr.mjc.capstone.domain.children.entity.ChildrenEntity;
 import ac.kr.mjc.capstone.domain.children.repository.ChildrenRepository;
-import ac.kr.mjc.capstone.domain.contest.entity.Contest;
-import ac.kr.mjc.capstone.domain.contest.entity.ContestDetails;
-import ac.kr.mjc.capstone.domain.contest.entity.ProgressStatus;
-import ac.kr.mjc.capstone.domain.contest.entity.Round;
+import ac.kr.mjc.capstone.domain.contest.dto.StoryRequest;
+import ac.kr.mjc.capstone.domain.contest.entity.*;
 import ac.kr.mjc.capstone.domain.contest.repository.ContestDetailsRepository;
 import ac.kr.mjc.capstone.domain.contest.repository.ContestRepository;
+import ac.kr.mjc.capstone.domain.contest.repository.StoryRepository;
 import ac.kr.mjc.capstone.domain.user.entity.Role;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
@@ -42,6 +41,7 @@ public class DevTestInit implements CommandLineRunner {
     private final FileRepository fileRepository;
     private final ContestRepository contestRepository;
     private final ContestDetailsRepository contestDetailsRepository;
+    private final StoryRepository storyRepository;
 
     @Override
     public void run(String... args) {
@@ -169,6 +169,10 @@ public class DevTestInit implements CommandLineRunner {
         ContestDetails contestDetails4 = addContestDetails("시작 문구4", Round.FINAL, contest1,
                 LocalDate.of(2026,2,14), LocalDate.of(2025,2,28),ProgressStatus.VOTING);
 
+        Story story1 = addStory(contestDetails1, userEntity, "이어쓰기1", 0);
+        Story story2 = addStory(contestDetails1, userEntity2, "이어쓰기2", 0);
+        Story story3 = addStory(contestDetails1, userEntity, "이어쓰기3", 0);
+
     }
 
     private ChildrenEntity addchild(String childName, LocalDate childBirth, Integer birthOrder,
@@ -267,6 +271,17 @@ public class DevTestInit implements CommandLineRunner {
 
         contestDetailsRepository.save(contestDetails);
         return contestDetails;
+    }
+
+    private Story addStory(ContestDetails contestDetails, UserEntity user, String content, int voteCount){
+        Story story = Story.builder()
+                .contestDetails(contestDetails)
+                .user(user)
+                .content(content)
+                .voteCount(voteCount)
+                .build();
+        storyRepository.save(story);
+        return story;
     }
 
 }

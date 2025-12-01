@@ -5,6 +5,8 @@ import ac.kr.mjc.capstone.global.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "vote")
 @Getter
@@ -12,7 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Vote extends BaseEntity {
+public class Vote{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "vote_id")
@@ -25,4 +27,10 @@ public class Vote extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
+
+    @ManyToOne
+    @JoinColumn(name = "contest_details_id", nullable = false)
+    private ContestDetails contestDetails;
+
+    private LocalDateTime votedAt;
 }

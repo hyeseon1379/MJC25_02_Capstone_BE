@@ -1,9 +1,6 @@
 package ac.kr.mjc.capstone.domain.contest.controller;
 
-import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsResponse;
-import ac.kr.mjc.capstone.domain.contest.dto.ContestDetailsUpdateRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.StoryRequest;
-import ac.kr.mjc.capstone.domain.contest.dto.StoryResponse;
+import ac.kr.mjc.capstone.domain.contest.dto.*;
 import ac.kr.mjc.capstone.domain.contest.service.inf.StoryService;
 import ac.kr.mjc.capstone.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,5 +59,21 @@ public class StoryController {
         storyService.deleteStory(userId, contestDetailsId, storyId);
 
         return ApiResponse.success("이어쓰기 삭제 성공");
+    }
+
+    @PostMapping("/{contestDetailsId}/{storyId}/vote")
+    @Operation(summary = "투표 생성", description = "투표를 생성합니다")
+    public ApiResponse<Void> createVote(@AuthenticationPrincipal Long userId,
+                                                                  @PathVariable("contestDetailsId") Long contestDetailsId,
+                                                                  @PathVariable("storyId") Long storyId){
+        storyService.createVote(userId, contestDetailsId, storyId);
+        return ApiResponse.success("투표 성공");
+    }
+
+    @GetMapping("/{contestDetailsId}/vote")
+    @Operation(summary = "투표 결과 조회", description = "투표가 완료된 이어쓰기 목록을 조회합니다")
+    public ResponseEntity<ApiResponse<List<StoryVoteResponse>>> getStoryListVoted(@PathVariable("contestDetailsId") Long contestDetailsId) {
+        ApiResponse<List<StoryVoteResponse>> response = storyService.getStoryListVoted(contestDetailsId);
+        return ResponseEntity.status(200).body(response);
     }
 }

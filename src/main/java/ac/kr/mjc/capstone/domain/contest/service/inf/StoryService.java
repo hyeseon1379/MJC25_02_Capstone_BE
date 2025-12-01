@@ -10,4 +10,7 @@ public interface StoryService {
     ApiResponse<List<StoryResponse>> getStoryList(Long contestDetailsId);
     ApiResponse<StoryResponse> updateStory(Long userId, Long contestDetailsId, Long storyId, StoryRequest contestRequest);
     ApiResponse<Void> deleteStory(Long userId, Long contestDetailsId, Long storyId);
+
+    ApiResponse<Void> createVote(Long userId, Long contestDetailsId, Long storyId);
+    ApiResponse<List<StoryVoteResponse>> getStoryListVoted(Long contestDetailsId);
 }

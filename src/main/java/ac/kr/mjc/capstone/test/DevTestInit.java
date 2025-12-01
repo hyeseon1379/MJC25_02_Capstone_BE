@@ -7,6 +7,11 @@ import ac.kr.mjc.capstone.domain.book.repository.ReaderRepository;
 import ac.kr.mjc.capstone.domain.children.entity.ChildGender;
 import ac.kr.mjc.capstone.domain.children.entity.ChildrenEntity;
 import ac.kr.mjc.capstone.domain.children.repository.ChildrenRepository;
+import ac.kr.mjc.capstone.domain.contest.dto.StoryRequest;
+import ac.kr.mjc.capstone.domain.contest.entity.*;
+import ac.kr.mjc.capstone.domain.contest.repository.ContestDetailsRepository;
+import ac.kr.mjc.capstone.domain.contest.repository.ContestRepository;
+import ac.kr.mjc.capstone.domain.contest.repository.StoryRepository;
 import ac.kr.mjc.capstone.domain.user.entity.Role;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import ac.kr.mjc.capstone.domain.user.repository.UserRepository;
@@ -34,6 +39,9 @@ public class DevTestInit implements CommandLineRunner {
     private final ChildrenRepository childrenRepository;
     private final BookDetailsRepository bookDetailsRepository;
     private final FileRepository fileRepository;
+    private final ContestRepository contestRepository;
+    private final ContestDetailsRepository contestDetailsRepository;
+    private final StoryRepository storyRepository;
 
     @Override
     public void run(String... args) {
@@ -76,6 +84,21 @@ public class DevTestInit implements CommandLineRunner {
                 .build();
 
         userRepository.save(userEntity2);
+
+        UserEntity admin = UserEntity.builder()
+                .email("admin@example.com")
+                .username("admin")
+                .password(encodedPassword1)
+                .birth(LocalDate.of(2005,6,4))
+                .phone("010-3333-3333")
+                .nickname("adminNick")
+                .color("#FFFFFF")
+                .address("address3")
+                .profileImg("admin.png")
+                .role(Role.ADMIN)
+                .build();
+
+        userRepository.save(admin);
 
         // --------자녀 정보 ---------
         ChildrenEntity childrenEntity1 = addchild("child1", LocalDate.of(2021,1,1),
@@ -124,10 +147,35 @@ public class DevTestInit implements CommandLineRunner {
         BookDetails bookDetails7 = addBookDetails(book5, reader6, ReadingStatus.COMPLETED,
                 LocalDate.of(2024,1,1), LocalDate.of(2024,1,7));
 
+        // --------대회 정보 ---------
+        ImageFileEntity image3 = addImageFile(ImageUsageType.CONTEST, "contest.jpg");
+        ImageFileEntity image4 = addImageFile(ImageUsageType.CONTEST_RESULT, "contest_result.jpg");
+
+        Contest contest1 = addContest("대회 제목 1","대회 설명 1", LocalDate.of(2026,1,1), LocalDate.of(2026,3,1),
+                image3, admin, ProgressStatus.PLANNED);
+        Contest contest2 = addContest("대회 제목 2","대회 설명 2", LocalDate.of(2025,11,1), LocalDate.of(2026,1,1),
+                image3, admin, ProgressStatus.ONGOING);
+        Contest contest3 = addContest("대회 제목 3","대회 설명 3", LocalDate.of(2025,1,1), LocalDate.of(2025,3,1),
+                image3, admin, ProgressStatus.ONGOING);
+        Contest contest4 = addContest("대회 제목 4","대회 설명 4", LocalDate.of(2024,1,1), LocalDate.of(2024,3,1),
+                image3, admin, ProgressStatus.COMPLETED);
+
+        ContestDetails contestDetails1 = addContestDetails("시작 문구1", Round.ROUND_1, contest1,
+                LocalDate.of(2026,1,1), LocalDate.of(2025,1,14),ProgressStatus.PLANNED);
+        ContestDetails contestDetails2 = addContestDetails("시작 문구2", Round.ROUND_2, contest1,
+                LocalDate.of(2026,1,15), LocalDate.of(2025,1,29),ProgressStatus.ONGOING);
+        ContestDetails contestDetails3 = addContestDetails("시작 문구3", Round.ROUND_3, contest1,
+                LocalDate.of(2026,1,30), LocalDate.of(2025,2,13),ProgressStatus.COMPLETED);
+        ContestDetails contestDetails4 = addContestDetails("시작 문구4", Round.FINAL, contest1,
+                LocalDate.of(2026,2,14), LocalDate.of(2025,2,28),ProgressStatus.VOTING);
+
+        Story story1 = addStory(contestDetails1, userEntity, "이어쓰기1", 0);
+        Story story2 = addStory(contestDetails1, userEntity2, "이어쓰기2", 0);
+        Story story3 = addStory(contestDetails1, userEntity, "이어쓰기3", 0);
 
     }
 
-    public ChildrenEntity addchild(String childName, LocalDate childBirth, Integer birthOrder,
+    private ChildrenEntity addchild(String childName, LocalDate childBirth, Integer birthOrder,
                                    String color, String profileImg, ChildGender gender, UserEntity userEntity){
         ChildrenEntity childrenEntity = ChildrenEntity.builder()
             .childName(childName)
@@ -143,7 +191,7 @@ public class DevTestInit implements CommandLineRunner {
         return childrenEntity;
     }
 
-    public Reader addReader(UserEntity userEntity, ChildrenEntity childrenEntity, ReaderType readerType){
+    private Reader addReader(UserEntity userEntity, ChildrenEntity childrenEntity, ReaderType readerType){
         Reader reader = Reader.builder()
                 .userEntity(userEntity)
                 .childrenEntity(childrenEntity)
@@ -154,7 +202,7 @@ public class DevTestInit implements CommandLineRunner {
         return reader;
     }
 
-    public BookDetails addBookDetails(Book book, Reader reader, ReadingStatus readingStatus,
+    private BookDetails addBookDetails(Book book, Reader reader, ReadingStatus readingStatus,
                                       LocalDate startDate, LocalDate endDate){
         BookDetails bookDetails = BookDetails.builder()
                 .book(book)
@@ -170,7 +218,7 @@ public class DevTestInit implements CommandLineRunner {
         return bookDetails;
     }
 
-    public Book addBook(UserEntity userEntity, String title, String author, String publisher,ImageFileEntity imageFile){
+    private Book addBook(UserEntity userEntity, String title, String author, String publisher,ImageFileEntity imageFile){
         Book book = Book.builder()
                 .user(userEntity)
                 .title(title)
@@ -193,4 +241,47 @@ public class DevTestInit implements CommandLineRunner {
         fileRepository.save(imageFile);
         return imageFile;
     }
+
+    private Contest addContest(String title, String content, LocalDate startDate, LocalDate endDate, ImageFileEntity imageFile,
+                               UserEntity userEntity, ProgressStatus progressStatus){
+        Contest contest = Contest.builder()
+                .title(title)
+                .content(content)
+                .startDate(startDate)
+                .endDate(endDate)
+                .image(imageFile)
+                .user(userEntity)
+                .progressStatus(progressStatus)
+                .build();
+
+        contestRepository.save(contest);
+        return contest;
+    }
+
+    private ContestDetails addContestDetails(String startPrompt, Round round, Contest contest, LocalDate startDate, LocalDate endDate, ProgressStatus progressStatus){
+
+        ContestDetails contestDetails = ContestDetails.builder()
+                .startPrompt(startPrompt)
+                .round(round)
+                .contest(contest)
+                .startDate(startDate)
+                .endDate(endDate)
+                .progressStatus(progressStatus)
+                .build();
+
+        contestDetailsRepository.save(contestDetails);
+        return contestDetails;
+    }
+
+    private Story addStory(ContestDetails contestDetails, UserEntity user, String content, int voteCount){
+        Story story = Story.builder()
+                .contestDetails(contestDetails)
+                .user(user)
+                .content(content)
+                .voteCount(voteCount)
+                .build();
+        storyRepository.save(story);
+        return story;
+    }
+
 }

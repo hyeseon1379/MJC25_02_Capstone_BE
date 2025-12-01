@@ -5,6 +5,8 @@ import lombok.Getter;
 @Getter
 public enum ImageUsageType {
     BOOK("book"),
+    CONTEST("contest"),
+    CONTEST_RESULT("contest_result"),
     NOTICE("notice"),
     BOARD("board");
 

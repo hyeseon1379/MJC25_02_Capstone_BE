@@ -56,12 +56,22 @@ public class ContestImageService {
         List<ContestResult> results = new ArrayList<>();
         Round[] rounds = {Round.ROUND_1, Round.ROUND_2, Round.ROUND_3, Round.FINAL};
 
-        for (Round round : rounds) {
+        for (int i = 0; i < rounds.length; i++) {
+            Round round = rounds[i];
             try {
                 ContestResult result = generateImageForRound(contest, round);
                 if (result != null) {
                     results.add(result);
                 }
+                
+                // API 요청 제한 회피를 위해 40초 대기 (마지막 라운드 제외)
+                if (i < rounds.length - 1) {
+                    log.info("API 요청 제한 회피를 위해 40초 대기...");
+                    Thread.sleep(40000);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("대기 중 인터럽트 발생: {}", e.getMessage());
             } catch (Exception e) {
                 log.error("라운드 {} 이미지 생성 실패: {}", round, e.getMessage());
             }

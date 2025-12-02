@@ -64,10 +64,10 @@ public class ContestImageService {
                     results.add(result);
                 }
                 
-                // API 요청 제한 회피를 위해 40초 대기 (마지막 라운드 제외)
+                // API 요청 제한 회피를 위해 60초 대기 (마지막 라운드 제외)
                 if (i < rounds.length - 1) {
-                    log.info("API 요청 제한 회피를 위해 40초 대기...");
-                    Thread.sleep(40000);
+                    log.info("API 요청 제한 회피를 위해 60초 대기...");
+                    Thread.sleep(60000);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

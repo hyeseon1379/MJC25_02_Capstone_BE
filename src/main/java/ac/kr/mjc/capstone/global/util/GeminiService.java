@@ -18,7 +18,7 @@ public class GeminiService {
     private final AiConfig aiConfig;
 
     private static final String GEMINI_TEXT_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-    private static final String GEMINI_IMAGE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent";
+    private static final String GEMINI_IMAGE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
 
     /**
      * 한글 글 내용을 바탕으로 영어 이미지 프롬프트 생성

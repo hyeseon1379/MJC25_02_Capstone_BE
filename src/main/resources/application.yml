@@ -86,6 +86,7 @@ spring:
 # File Upload Directory
 file:
   upload-dir: uploads/board-images
+  contest-image-dir: uploads/contest-images
 
 # JWT
 jwt:
@@ -98,3 +99,8 @@ jwt:
 app:
   base-url: ${APP_BASE_URL:http://localhost:18888}
   frontend-url: ${FRONTEND_URL:http://localhost:8080}
+
+# AI API Settings
+ai:
+  gemini:
+    api-key: ${GEMINI_API_KEY}

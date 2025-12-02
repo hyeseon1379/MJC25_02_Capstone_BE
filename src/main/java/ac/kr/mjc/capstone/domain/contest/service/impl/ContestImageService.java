@@ -42,15 +42,11 @@ public class ContestImageService {
     /**
      * 특정 Contest의 4개 라운드 1등 글로 이미지 생성
      */
-    @Transactional
     public List<ContestResult> generateContestImages(Long contestId) {
-        // 1. Contest 조회
         Contest contest = contestRepository.findById(contestId)
                 .orElseThrow(() -> new RuntimeException("Contest를 찾을 수 없습니다. ID: " + contestId));
 
         log.info("Contest 이미지 생성 시작: {}", contest.getTitle());
-
-        // 디렉토리 생성
         createDirectoryIfNotExists();
 
         List<ContestResult> results = new ArrayList<>();
@@ -58,27 +54,69 @@ public class ContestImageService {
 
         for (int i = 0; i < rounds.length; i++) {
             Round round = rounds[i];
-            try {
-                ContestResult result = generateImageForRound(contest, round);
-                if (result != null) {
-                    results.add(result);
-                }
-                
-                // API 요청 제한 회피를 위해 60초 대기 (마지막 라운드 제외)
-                if (i < rounds.length - 1) {
-                    log.info("API 요청 제한 회피를 위해 60초 대기...");
-                    Thread.sleep(60000);
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.error("대기 중 인터럽트 발생: {}", e.getMessage());
-            } catch (Exception e) {
-                log.error("라운드 {} 이미지 생성 실패: {}", round, e.getMessage());
+
+            // === 변경된 부분: 재시도 로직 호출 ===
+            ContestResult result = generateImageWithRetry(contest, round);
+
+            if (result != null) {
+                results.add(result);
+            }
+
+            // 성공했더라도 다음 라운드를 위해 기본 30초 휴식 (너무 자주 쏘면 안되니까)
+            if (i < rounds.length - 1) {
+                sleepInSeconds(30);
             }
         }
 
         log.info("Contest 이미지 생성 완료: {} 개 생성됨", results.size());
         return results;
+    }
+
+    /**
+     * 재시도 로직이 포함된 이미지 생성 메서드
+     * 최대 3번 시도하며, 실패 시 대기 시간을 늘려가며 재시도합니다.
+     */
+    private ContestResult generateImageWithRetry(Contest contest, Round round) {
+        int maxRetries = 3; // 최대 3번 재시도
+        int retryCount = 0;
+        int waitTime = 60; // 초기 대기 시간 (60초)
+
+        while (retryCount < maxRetries) {
+            try {
+                // 원래 이미지 생성 로직 호출
+                return generateImageForRound(contest, round);
+
+            } catch (Exception e) {
+                // 에러 발생 시 로그 찍고 대기
+                retryCount++;
+                log.error("라운드 {} 이미지 생성 실패 (시도 {}/{}): {}", round, retryCount, maxRetries, e.getMessage());
+
+                if (retryCount >= maxRetries) {
+                    log.error("최대 재시도 횟수 초과. 해당 라운드 이미지 생성 포기.");
+                    return null;
+                }
+
+                log.warn("API 제한(429) 등이 의심되어 {}초 대기 후 재시도합니다...", waitTime);
+                sleepInSeconds(waitTime);
+
+                // 다음 대기 시간은 2배로 늘림 (60초 -> 120초 -> ...)
+                waitTime *= 2;
+            }
+        }
+        return null;
+    }
+
+    // 기존 generateImageForRound는 그대로 두거나 private으로 유지...
+
+    /**
+     * 스레드 슬립 유틸 메서드
+     */
+    private void sleepInSeconds(int seconds) {
+        try {
+            Thread.sleep(seconds * 1000L);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**

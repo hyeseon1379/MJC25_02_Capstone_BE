@@ -51,7 +51,8 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/users/signup",
                                 "/api/users/verify",
-                                "/api/users/reset-password"
+                                "/api/users/reset-password",
+                                "/api/test/**"
                         ).permitAll()
                         // OAuth2 관련 엔드포인트 허용
                         .requestMatchers(

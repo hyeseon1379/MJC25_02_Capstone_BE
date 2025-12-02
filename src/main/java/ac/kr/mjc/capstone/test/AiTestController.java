@@ -32,23 +32,32 @@ public class AiTestController {
     @PostMapping("/generate")
     public ResponseEntity<Map<String, Object>> testGenerateImage(@RequestBody Map<String, String> request) {
         String koreanText = request.get("text");
-        
+
         if (koreanText == null || koreanText.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", "text 필드가 필요합니다."
+                    "success", false,
+                    "message", "text 필드가 필요합니다."
             ));
         }
 
         try {
             log.info("테스트 이미지 생성 시작: {}", koreanText);
 
-            // 1. 프롬프트 생성
-            String prompt = geminiService.generateImagePrompt(koreanText);
-            log.info("생성된 프롬프트: {}", prompt);
+            // =================================================================
+            // [핵심 변경 사항] API 호출 횟수 줄이기 (1단계 생략)
+            // =================================================================
 
-            // 2. 이미지 생성
-            String base64Image = geminiService.generateImage(prompt);
+            // 기존: 한글 -> 영어 프롬프트 변환 (API 1회 소모) -> 이미지 생성 (API 1회 소모) = 총 2회 (429 에러 원인)
+            // String prompt = geminiService.generateImagePrompt(koreanText);
+
+            // 변경: 입력받은 텍스트에 스타일만 붙여서 바로 이미지 생성기로 보냄 (API 1회 소모)
+            // Gemini 2.0 모델은 한글이 섞여 있어도 이미지를 잘 만들어줍니다.
+            String finalPrompt = "High quality illustration, whimsical style, " + koreanText;
+
+            log.info("최종 프롬프트(변환 과정 생략): {}", finalPrompt);
+
+            // 2. 이미지 생성 (이것이 첫 번째이자 마지막 API 호출이 됨)
+            String base64Image = geminiService.generateImage(finalPrompt);
 
             // 3. 파일 저장
             Path dirPath = Paths.get(contestImageDir);
@@ -64,17 +73,17 @@ public class AiTestController {
             log.info("이미지 저장 완료: {}", filePath);
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "prompt", prompt,
-                "imagePath", filePath.toString(),
-                "message", "이미지 생성 완료!"
+                    "success", true,
+                    "prompt", finalPrompt,
+                    "imagePath", filePath.toString(),
+                    "message", "이미지 생성 완료!"
             ));
 
         } catch (Exception e) {
             log.error("이미지 생성 실패: {}", e.getMessage());
             return ResponseEntity.internalServerError().body(Map.of(
-                "success", false,
-                "message", "이미지 생성 실패: " + e.getMessage()
+                    "success", false,
+                    "message", "이미지 생성 실패: " + e.getMessage()
             ));
         }
     }

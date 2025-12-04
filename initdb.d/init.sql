@@ -5,6 +5,7 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- Drop tables if exist (Reverse order for safety)
+DROP TABLE IF EXISTS `calendar_schedule`;
 DROP TABLE IF EXISTS `result_images`;
 DROP TABLE IF EXISTS `vote`;
 DROP TABLE IF EXISTS `dialogue_answer`;
@@ -256,6 +257,28 @@ CREATE TABLE `book_details` (
     KEY `idx_reader_id` (`reader_id`),
     CONSTRAINT `fk_book_details_book` FOREIGN KEY (`book_id`) REFERENCES `book` (`book_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_book_details_reader` FOREIGN KEY (`reader_id`) REFERENCES `reader` (`reader_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: calendar_schedule (신규 - 독립적인 일정 관리)
+CREATE TABLE `calendar_schedule` (
+    `schedule_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
+    `book_id` BIGINT NOT NULL,
+    `child_id` BIGINT NULL COMMENT '자녀 ID (본인이면 NULL)',
+    `start_date` DATE NOT NULL,
+    `end_date` DATE NULL,
+    `status` ENUM('TO_READ', 'READING', 'COMPLETED') NOT NULL DEFAULT 'READING',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`schedule_id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_book_id` (`book_id`),
+    KEY `idx_child_id` (`child_id`),
+    KEY `idx_start_date` (`start_date`),
+    KEY `idx_end_date` (`end_date`),
+    CONSTRAINT `fk_calendar_schedule_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_calendar_schedule_book` FOREIGN KEY (`book_id`) REFERENCES `book` (`book_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_calendar_schedule_child` FOREIGN KEY (`child_id`) REFERENCES `children` (`child_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: dialogue

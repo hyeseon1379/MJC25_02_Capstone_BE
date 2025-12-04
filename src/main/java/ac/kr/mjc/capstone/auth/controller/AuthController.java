@@ -36,7 +36,7 @@ public class AuthController {
 
         } catch (Exception e) {
             log.error("로그인 실패 : " + e.toString());
-            throw new LoginException("GG");
+            throw new LoginException("로그인에 실패했습니다.");
         }
 
     }

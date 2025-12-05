@@ -1,6 +1,9 @@
 package ac.kr.mjc.capstone.global.config;
 
 import ac.kr.mjc.capstone.auth.filter.JwtAuthenticationFilter;
+import ac.kr.mjc.capstone.auth.oauth2.CustomOAuth2UserService;
+import ac.kr.mjc.capstone.auth.oauth2.OAuth2AuthenticationFailureHandler;
+import ac.kr.mjc.capstone.auth.oauth2.OAuth2AuthenticationSuccessHandler;
 import ac.kr.mjc.capstone.auth.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +25,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtService jwtService;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,7 +51,13 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/users/signup",
                                 "/api/users/verify",
-                                "/api/users/reset-password"
+                                "/api/users/reset-password",
+                                "/api/test/**"
+                        ).permitAll()
+                        // OAuth2 관련 엔드포인트 허용
+                        .requestMatchers(
+                                "/oauth2/**",
+                                "/login/oauth2/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 게시판 조회는 모든 사용자 허용 (GET 요청)
@@ -55,6 +67,22 @@ public class SecurityConfig {
                         // 댓글 조회는 모든 사용자 허용 (GET 요청)
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/boards/*/replies", "/api/boards/*/replies/**").permitAll()
                         .anyRequest().authenticated()
+                )
+                // 기본 폼 로그인 비활성화
+                .formLogin(AbstractHttpConfigurer::disable)
+                // OAuth2 로그인 설정
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization")
+                        )
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/login/oauth2/code/*")
+                        )
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

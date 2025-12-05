@@ -2,6 +2,7 @@ package ac.kr.mjc.capstone.auth.service;
 
 import ac.kr.mjc.capstone.auth.dto.*;
 import ac.kr.mjc.capstone.auth.entity.EmailVerify;
+import ac.kr.mjc.capstone.auth.entity.OAuth2AuthCode;
 import ac.kr.mjc.capstone.auth.entity.RefreshToken;
 import ac.kr.mjc.capstone.auth.repository.EmailVerifyRepository;
 import ac.kr.mjc.capstone.auth.repository.RefreshTokenRepository;
@@ -37,11 +38,45 @@ public class AuthService {
     private final JwtProperties jwtProperties;
     private final EmailService emailService;
     private final EmailVerifyRepository emailRepository;
+    private final OAuth2AuthCodeService authCodeService;
+
+    /**
+     * OAuth2 일회용 코드를 AccessToken/RefreshToken으로 교환
+     * 보안 개선: URL에 토큰 노출 방지
+     */
+    @Transactional
+    public TokenResponse exchangeOAuth2CodeForTokens(String code) {
+        // 일회용 코드 검증 및 소비
+        OAuth2AuthCode authCode = authCodeService.validateAndConsumeCode(code);
+
+        Long userId = authCode.getUserId();
+        String email = authCode.getEmail();
+
+        // JWT 토큰 생성
+        String accessToken = jwtService.generateAccessToken(userId, email);
+        String refreshToken = jwtService.generateRefreshToken(userId);
+
+        // RefreshToken DB 저장
+        saveOrUpdateRefreshToken(userId, refreshToken);
+
+        log.info("OAuth2 토큰 교환 완료 - UserId: {}", userId);
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .build();
+    }
 
     @Transactional
     public void forgotPassword(String email) {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 소셜 로그인 사용자 체크
+        if (user.isSocialUser()) {
+            throw new CustomException(ErrorCode.SOCIAL_USER_CANNOT_CHANGE_PASSWORD);
+        }
 
         // 6자리 인증 코드 생성
         Random random = new Random();
@@ -129,6 +164,11 @@ public class AuthService {
     public void resetPasswordWithToken(Long userId, String newPassword) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 소셜 로그인 사용자 체크
+        if (user.isSocialUser()) {
+            throw new CustomException(ErrorCode.SOCIAL_USER_CANNOT_CHANGE_PASSWORD);
+        }
 
         // 새 비밀번호 암호화 및 저장
         user.updatePassword(passwordEncoder.encode(newPassword));

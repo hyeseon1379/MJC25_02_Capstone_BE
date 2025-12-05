@@ -26,6 +26,7 @@ public enum ErrorCode {
     DUPLICATE_USERNAME("USER003", "이미 사용 중인 사용자 이름입니다"),
     USER_VERIFICATION_FAILED("USER004", "사용자 인증에 실패했습니다"),
     PASSWORD_MISMATCH("USER005", "비밀번호가 일치하지 않습니다"),
+    SOCIAL_USER_CANNOT_CHANGE_PASSWORD("USER006", "소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다"),
 
     // Board
     BOARD_NOT_FOUND("BOARD001", "게시글을 찾을 수 없습니다"),
@@ -69,8 +70,18 @@ public enum ErrorCode {
 
     //Vote
     ALREADY_VOTED("VOTE001","이미 투표하였습니다."),
-    ALREADY_EXISTS("VOTE002","자신에게 투표할 수 없습니다.");
+    ALREADY_EXISTS("VOTE002","자신에게 투표할 수 없습니다."),
 
+    // packaze
+
+    NOT_FOUND("PACK001","패키지를 찾을수 없습니다"),
+    EXIST("PACK002","이미 존재하는 ~~"),
+
+    // Subscription
+    SUBSCRIPTION_NOT_FOUND("SUB001", "구독을 찾을 수 없습니다"),
+    SUBSCRIPTION_ALREADY_EXISTS("SUB002", "이미 활성화된 구독이 존재합니다"),
+    SUBSCRIPTION_ALREADY_CANCELLED("SUB003", "이미 취소된 구독입니다"),
+    SUBSCRIPTION_NOT_ACTIVE("SUB004", "활성 상태의 구독이 아닙니다");
     private final String code;
     private final String message;
 }

@@ -93,6 +93,11 @@ public class UserService {
         UserEntity userEntity = userRepository.findByEmailAndUsername(request.getEmail(), request.getUsername())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_VERIFICATION_FAILED));
 
+        // 소셜 로그인 사용자 체크
+        if (userEntity.isSocialUser()) {
+            throw new CustomException(ErrorCode.SOCIAL_USER_CANNOT_CHANGE_PASSWORD);
+        }
+
         // 비밀번호 업데이트
         userEntity.updatePassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(userEntity);
@@ -128,9 +133,12 @@ public class UserService {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        // 비밀번호 확인
-        if (!passwordEncoder.matches(password, userEntity.getPassword())) {
-            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        // 소셜 로그인 사용자는 비밀번호 확인 생략
+        if (!userEntity.isSocialUser()) {
+            // 비밀번호 확인
+            if (!passwordEncoder.matches(password, userEntity.getPassword())) {
+                throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+            }
         }
 
         // RefreshToken 삭제

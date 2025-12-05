@@ -50,6 +50,13 @@ public class UserEntity {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    // 소셜 로그인 필드
+    @Column(length = 20)
+    private String provider;  // NAVER, KAKAO, LOCAL
+
+    @Column(name = "provider_id", length = 255)
+    private String providerId;
+
     // 비밀번호 재설정용 필드 추가
     @Column(name = "reset_token", length = 10)
     private String resetToken;
@@ -61,6 +68,9 @@ public class UserEntity {
     public void prePersist() {
         if (this.role == null) {
             this.role = Role.USER;
+        }
+        if (this.provider == null) {
+            this.provider = "LOCAL";
         }
     }
 
@@ -76,6 +86,12 @@ public class UserEntity {
         if (profileImg != null) this.profileImg = profileImg;
     }
 
+    // 소셜 로그인 사용자 정보 업데이트
+    public void updateOAuthInfo(String username, String profileImg) {
+        if (username != null) this.username = username;
+        if (profileImg != null) this.profileImg = profileImg;
+    }
+
     // 비밀번호 재설정 토큰 설정
     public void setResetToken(String resetToken, LocalDateTime expiryDate) {
         this.resetToken = resetToken;
@@ -86,5 +102,10 @@ public class UserEntity {
     public void clearResetToken() {
         this.resetToken = null;
         this.resetTokenExpiry = null;
+    }
+
+    // 소셜 로그인 여부 확인
+    public boolean isSocialUser() {
+        return provider != null && !provider.equals("LOCAL");
     }
 }

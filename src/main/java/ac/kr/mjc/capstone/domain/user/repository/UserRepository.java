@@ -13,6 +13,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmailAndUsername(String email, String username);
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
-    // UserRepository.java에 추가
     Optional<UserEntity> findByResetToken(String resetToken);
+    
+    // OAuth2 소셜 로그인용
+    Optional<UserEntity> findByProviderAndProviderId(String provider, String providerId);
 }

@@ -25,7 +25,7 @@ services:
       - capstone
 
   backend:
-    image: jhh0101/capstone:v1.0.26
+    image: jhh0101/capstone:v1.0.27
     container_name: backend_container
     ports:
       # 로컬 PC의 18888 포트 -> 컨테이너의 8082 포트로 연결
@@ -62,7 +62,7 @@ services:
       - capstone
 
   frontend:
-    image: willy0126/capstone-fe:v1.0
+    image: willy0126/capstone-fe:v1.0.3
     build:
       context: .
 

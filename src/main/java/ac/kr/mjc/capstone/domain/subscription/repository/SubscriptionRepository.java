@@ -1,6 +1,7 @@
 package ac.kr.mjc.capstone.domain.subscription.repository;
 
 import ac.kr.mjc.capstone.domain.subscription.entity.Subscription;
+import ac.kr.mjc.capstone.domain.subscription.entity.SubscriptionPlan;
 import ac.kr.mjc.capstone.domain.subscription.entity.SubscriptionStatus;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +17,9 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     
     // 특정 사용자의 특정 상태 구독이 존재하는지 확인
     boolean existsByUserAndStatus(UserEntity user, SubscriptionStatus status);
+    
+    // 특정 사용자, 특정 플랜, 특정 상태의 구독이 존재하는지 확인
+    boolean existsByUserAndPlanAndStatus(UserEntity user, SubscriptionPlan plan, SubscriptionStatus status);
     
     // 특정 사용자의 모든 구독 조회
     List<Subscription> findAllByUserUserId(Long userId);

@@ -81,7 +81,16 @@ public enum ErrorCode {
     SUBSCRIPTION_NOT_FOUND("SUB001", "구독을 찾을 수 없습니다"),
     SUBSCRIPTION_ALREADY_EXISTS("SUB002", "이미 활성화된 구독이 존재합니다"),
     SUBSCRIPTION_ALREADY_CANCELLED("SUB003", "이미 취소된 구독입니다"),
-    SUBSCRIPTION_NOT_ACTIVE("SUB004", "활성 상태의 구독이 아닙니다");
+    SUBSCRIPTION_NOT_ACTIVE("SUB004", "활성 상태의 구독이 아닙니다"),
+
+    // Dialogue
+    DIALOGUE_NOT_FOUND("DIA001", "대화 기록을 찾을 수 없습니다"),
+    DIALOGUE_FORBIDDEN("DIA002", "해당 대화 기록에 대한 권한이 없습니다"),
+    INVALID_EMOTION_TYPE("DIA003", "유효하지 않은 감정 타입입니다"),
+
+    // Common
+    BAD_REQUEST("C002", "잘못된 요청입니다"),
+    RESOURCE_NOT_FOUND("C003", "리소스를 찾을 수 없습니다");
     private final String code;
     private final String message;
 }

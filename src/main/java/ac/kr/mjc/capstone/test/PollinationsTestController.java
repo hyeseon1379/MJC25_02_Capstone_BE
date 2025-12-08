@@ -127,7 +127,7 @@ public class PollinationsTestController {
         }
     }
 
-    @Operation(summary = "연속 생성 테스트 (4장)", description = "월간 우승 시뮬레이션 - 한글 → 영어 프롬프트 → 이미지 4장 연속 생성")
+    @Operation(summary = "연속 생성 테스트 (4장)", description = "월간 우승 시뮬레이션 - 한글 → 영어 프롬프트 → 이미지 4장 연속 생성 (스타일 통일)")
     @PostMapping("/generate-multiple")
     public ResponseEntity<Map<String, Object>> generateMultiple(@RequestBody MultipleRequest request) {
         List<String> texts = request.getTexts();
@@ -142,6 +142,10 @@ public class PollinationsTestController {
         log.info("=== 연속 {}장 생성 시작 ===", texts.size());
         long totalStart = System.currentTimeMillis();
 
+        // 스타일 통일을 위한 고정 seed 생성 (같은 요청 내 모든 이미지에 동일 적용)
+        long styleSeed = System.currentTimeMillis() % 100000;
+        log.info("스타일 통일 seed: {}", styleSeed);
+
         List<Map<String, Object>> results = new ArrayList<>();
 
         for (int i = 0; i < texts.size(); i++) {
@@ -151,13 +155,14 @@ public class PollinationsTestController {
             long start = System.currentTimeMillis();
 
             try {
-                // 1단계: Gemini로 한글 → 영어 프롬프트 변환
+                // 1단계: Groq으로 한글 → 영어 프롬프트 변환
                 String englishPrompt = geminiService.generateImagePrompt(koreanText);
                 log.info("[{}/{}] 영어 프롬프트: {}", i + 1, texts.size(), englishPrompt);
 
-                // 2단계: Pollinations로 이미지 생성
+                // 2단계: Pollinations로 이미지 생성 (seed로 스타일 통일)
                 String encodedPrompt = URLEncoder.encode(englishPrompt, StandardCharsets.UTF_8);
-                String apiUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt + "?width=1024&height=1024&nologo=true";
+                String apiUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt + 
+                        "?width=1024&height=1024&nologo=true&seed=" + styleSeed;
 
                 byte[] imageBytes = webClient.get()
                         .uri(apiUrl)
@@ -197,6 +202,15 @@ public class PollinationsTestController {
 
                 log.info("[{}/{}] 완료! {}초", i + 1, texts.size(), elapsed / 1000.0);
 
+                // Rate Limit 방지를 위해 다음 요청 전 3초 대기
+                if (i < texts.size() - 1) {
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+
             } catch (Exception e) {
                 long elapsed = System.currentTimeMillis() - start;
                 results.add(Map.of(
@@ -215,6 +229,7 @@ public class PollinationsTestController {
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
+                "styleSeed", styleSeed,
                 "totalElapsedMs", totalElapsed,
                 "totalElapsedSeconds", totalElapsed / 1000.0,
                 "results", results

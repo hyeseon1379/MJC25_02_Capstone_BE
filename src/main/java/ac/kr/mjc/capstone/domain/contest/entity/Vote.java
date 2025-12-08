@@ -29,7 +29,7 @@ public class Vote{
     private UserEntity user;
 
     @ManyToOne
-    @JoinColumn(name = "contest_details_id", nullable = false)
+    @JoinColumn(name = "details_id", nullable = false)
     private ContestDetails contestDetails;
 
     private LocalDateTime votedAt;

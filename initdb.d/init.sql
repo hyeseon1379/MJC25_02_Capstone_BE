@@ -216,11 +216,13 @@ CREATE TABLE `contest` (
     `start_date` DATETIME NULL,
     `end_date` DATETIME NULL,
     `progress_status` ENUM('PLANNED', 'ONGOING', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PLANNED',
-    `image` VARCHAR(500) NULL,
+    `image_id` BIGINT NULL,
     PRIMARY KEY (`contest_id`),
     KEY `idx_user_id` (`user_id`),
+    KEY `idx_image_id` (`image_id`),
     KEY `idx_progress_status` (`progress_status`),
-    CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE, -- 여기 콤마 추가
+    CONSTRAINT `fk_contest_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: board
@@ -429,7 +431,7 @@ CREATE TABLE `share_board` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- Table: reply (오류 수정: FOREIGN FOREIGN -> FOREIGN KEY)
+-- Table: reply (오류 수정: FOREIGN -> FOREIGN KEY)
 CREATE TABLE `reply` (
     `reply_id` BIGINT NOT NULL AUTO_INCREMENT,
     `board_id` BIGINT NOT NULL,

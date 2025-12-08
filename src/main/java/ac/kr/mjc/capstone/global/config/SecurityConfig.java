@@ -62,6 +62,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 게시판 조회는 모든 사용자 허용 (GET 요청)
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/boards", "/api/boards/*").permitAll()
+                        // 이미지 조회는 모든 사용자 허용 (GET 요청)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/images", "/api/images/*").permitAll()
                         // 공지사항 조회는 모든 사용자 허용 (GET 요청)
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/notices", "/api/notices/**").permitAll()
                         // 댓글 조회는 모든 사용자 허용 (GET 요청)

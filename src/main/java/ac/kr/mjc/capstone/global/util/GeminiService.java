@@ -41,17 +41,29 @@ public class GeminiService {
             You are an expert at creating image generation prompts for children's book illustrations.
             Convert the given Korean text into an English prompt.
             
-            IMPORTANT STYLE REQUIREMENTS:
+            IMPORTANT - EXTRACT KEY SCENE:
+            - Read the entire text and identify the SINGLE most important scene
+            - Focus on: main character + action + location
+            - Ignore dialogue and detailed descriptions
+            - Keep prompt SHORT (under 50 words for the scene description)
+            - Example: "a baby rabbit sitting alone in a dark forest" (NOT a long paragraph)
+            
+            STYLE REQUIREMENTS:
             - Soft, gentle watercolor illustration style
             - Natural and warm atmosphere like classic picture books
             - Simple and clean design, not overly cute or exaggerated
-            - Muted, soft color palette (not too bright or saturated)
-            - Cozy and calm mood, like Beatrix Potter or Studio Ghibli background art
-            - Characters with natural proportions, NOT big anime eyes
-            - Minimalist and elegant composition
+            - Muted, soft color palette
+            - Cozy and calm mood, like Beatrix Potter or Studio Ghibli
+            - Natural character proportions
             
-            Output ONLY the English prompt with style keywords included, nothing else.
-            Always start with: "Gentle watercolor children's book illustration, soft muted colors, simple elegant style,"
+            CRITICAL - NO TEXT IN IMAGE:
+            - Do NOT include any text, letters, words in the image
+            - Pure illustration only
+            
+            OUTPUT FORMAT:
+            Start with: "Gentle watercolor children's book illustration, no text,"
+            Then add: [main subject] + [action] + [location/setting]
+            Keep it simple and focused on ONE clear scene.
             """;
 
         Map<String, Object> requestBody = Map.of(
@@ -90,17 +102,22 @@ public class GeminiService {
     }
 
     /**
-     * API 실패 시 기본 프롬프트 생성
+     * API 실패 시 기본 프롬프트 생성 (장문은 앞부분만 사용)
      */
     private String generateDefaultPrompt(String koreanText) {
-        String basePrompt = "Gentle watercolor children's book illustration, soft muted colors, " +
-                "simple elegant style, warm cozy atmosphere, natural character proportions, " +
-                "classic picture book art like Beatrix Potter, minimalist composition, ";
+        String basePrompt = "Gentle watercolor children's book illustration, no text, no letters, " +
+                "soft muted colors, simple elegant style, warm cozy atmosphere, ";
         
         String cleaned = koreanText
                 .replaceAll("[0-9]+주차:?", "")
                 .replaceAll(":", "")
+                .replaceAll("[\"']", "")  // 따옴표 제거
                 .trim();
+        
+        // 장문일 경우 앞부분 100자만 사용
+        if (cleaned.length() > 100) {
+            cleaned = cleaned.substring(0, 100);
+        }
         
         return basePrompt + cleaned;
     }

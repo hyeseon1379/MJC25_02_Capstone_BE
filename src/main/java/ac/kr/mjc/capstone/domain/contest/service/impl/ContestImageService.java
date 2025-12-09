@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -88,8 +89,13 @@ public class ContestImageService {
      * 비동기 이미지 생성 메서드
      */
     @Async("imageGenerationExecutor")
+    @Transactional
     public void generateContestImagesAsync(String jobId, Contest contest) {
-        log.info("비동기 이미지 생성 시작: jobId={}, contest={}", jobId, contest.getTitle());
+        // 비동기 컨텍스트에서 Contest 다시 조회 (영속성 컨텍스트 확보)
+        Contest managedContest = contestRepository.findById(contest.getContestId())
+                .orElseThrow(() -> new RuntimeException("Contest를 찾을 수 없습니다: " + contest.getContestId()));
+        
+        log.info("비동기 이미지 생성 시작: jobId={}, contest={}", jobId, managedContest.getTitle());
         
         ImageGenerationJob job = imageJobStore.findByJobId(jobId)
                 .orElseThrow(() -> new RuntimeException("작업을 찾을 수 없습니다: " + jobId));
@@ -108,7 +114,7 @@ public class ContestImageService {
                 log.info("라운드 {} 이미지 생성 시작 (jobId={})", round.getDisplayName(), jobId);
 
                 // 재시도 로직 포함 이미지 생성
-                ContestResult result = generateImageWithRetry(contest, round);
+                ContestResult result = generateImageWithRetry(managedContest, round);
 
                 if (result != null) {
                     job.addResult(ContestResultResponse.from(result));
@@ -216,7 +222,8 @@ public class ContestImageService {
                 .filePath(filePath)
                 .usageType(ImageUsageType.CONTEST_RESULT)
                 .build();
-        imageFileRepository.save(imageEntity);
+        ImageFileEntity savedImage = imageFileRepository.save(imageEntity);
+        log.info("이미지 DB 저장 완료: imageId={}, fileName={}", savedImage.getImageId(), fileName);
 
         // 7. ContestResult 저장
         String title = round.getDisplayName() + " 우승작";
@@ -226,17 +233,19 @@ public class ContestImageService {
 
         ContestResult contestResult;
         if (existingResult != null) {
-            existingResult.setImage(imageEntity);
+            existingResult.setImage(savedImage);
             existingResult.setFinalContent(topStory.getContent());
             contestResult = contestResultRepository.save(existingResult);
+            log.info("ContestResult 업데이트: resultId={}", contestResult.getResultId());
         } else {
             contestResult = ContestResult.builder()
                     .contest(contest)
                     .title(title)
                     .finalContent(topStory.getContent())
-                    .image(imageEntity)
+                    .image(savedImage)
                     .build();
             contestResult = contestResultRepository.save(contestResult);
+            log.info("ContestResult 생성: resultId={}", contestResult.getResultId());
         }
 
         log.info("라운드 {} 이미지 생성 완료: {}", round, filePath);

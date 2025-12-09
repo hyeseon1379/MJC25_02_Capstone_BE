@@ -1,5 +1,8 @@
 package ac.kr.mjc.capstone.test;
 
+import ac.kr.mjc.capstone.global.media.entity.ImageFileEntity;
+import ac.kr.mjc.capstone.global.media.entity.ImageUsageType;
+import ac.kr.mjc.capstone.global.media.repository.ImageFileRepository;
 import ac.kr.mjc.capstone.global.util.GeminiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
@@ -29,6 +33,7 @@ public class PollinationsTestController {
 
     private final WebClient webClient;
     private final GeminiService geminiService;
+    private final ImageFileRepository imageFileRepository;
 
     @Value("${file.contest-image-dir:uploads/contest-images}")
     private String contestImageDir;
@@ -39,7 +44,7 @@ public class PollinationsTestController {
         private List<String> texts;
     }
 
-    @Operation(summary = "Pollinations 이미지 생성 테스트", description = "한글 텍스트 → Gemini로 영어 프롬프트 생성 → Pollinations로 이미지 생성")
+    @Operation(summary = "Pollinations 이미지 생성 테스트", description = "한글 텍스트 → Groq으로 영어 프롬프트 생성 → Pollinations로 이미지 생성 → DB 저장")
     @PostMapping("/generate")
     public ResponseEntity<Map<String, Object>> generate(@RequestBody Map<String, String> request) {
         String koreanText = request.get("text");
@@ -56,7 +61,7 @@ public class PollinationsTestController {
             log.info("1. 입력 텍스트: {}", koreanText);
             long totalStart = System.currentTimeMillis();
 
-            // 1단계: Gemini로 한글 → 영어 프롬프트 변환
+            // 1단계: Groq으로 한글 → 영어 프롬프트 변환
             long promptStart = System.currentTimeMillis();
             String englishPrompt = geminiService.generateImagePrompt(koreanText);
             long promptElapsed = System.currentTimeMillis() - promptStart;
@@ -101,22 +106,32 @@ public class PollinationsTestController {
             Path filePath = Paths.get(contestImageDir, fileName);
             Files.write(filePath, imageBytes);
 
+            // 4단계: DB 저장
+            ImageFileEntity imageEntity = ImageFileEntity.builder()
+                    .fileName(fileName)
+                    .filePath(filePath.toString())
+                    .usageType(ImageUsageType.CONTEST_RESULT)
+                    .build();
+            ImageFileEntity savedImage = imageFileRepository.save(imageEntity);
+
             long totalElapsed = System.currentTimeMillis() - totalStart;
-            log.info("5. 저장 완료: {} (총 소요시간: {}ms)", filePath, totalElapsed);
+            log.info("5. 저장 완료: {} (DB ID: {}, 총 소요시간: {}ms)", filePath, savedImage.getImageId(), totalElapsed);
             log.info("=== 이미지 생성 완료 ===");
 
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "이미지 생성 완료!",
-                    "koreanText", koreanText,
-                    "englishPrompt", englishPrompt,
-                    "imagePath", filePath.toString(),
-                    "promptGenerationMs", promptElapsed,
-                    "imageGenerationMs", imageElapsed,
-                    "totalElapsedMs", totalElapsed,
-                    "totalElapsedSeconds", totalElapsed / 1000.0,
-                    "fileSizeKB", imageBytes.length / 1024
-            ));
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "이미지 생성 완료!");
+            response.put("imageId", savedImage.getImageId());
+            response.put("koreanText", koreanText);
+            response.put("englishPrompt", englishPrompt);
+            response.put("imagePath", filePath.toString());
+            response.put("promptGenerationMs", promptElapsed);
+            response.put("imageGenerationMs", imageElapsed);
+            response.put("totalElapsedMs", totalElapsed);
+            response.put("totalElapsedSeconds", totalElapsed / 1000.0);
+            response.put("fileSizeKB", imageBytes.length / 1024);
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             log.error("이미지 생성 실패: {}", e.getMessage());
@@ -127,7 +142,7 @@ public class PollinationsTestController {
         }
     }
 
-    @Operation(summary = "연속 생성 테스트 (4장)", description = "월간 우승 시뮬레이션 - 한글 → 영어 프롬프트 → 이미지 4장 연속 생성 (스타일 통일)")
+    @Operation(summary = "연속 생성 테스트 (4장)", description = "월간 우승 시뮬레이션 - 한글 → 영어 프롬프트 → 이미지 4장 연속 생성 (스타일 통일, DB 저장)")
     @PostMapping("/generate-multiple")
     public ResponseEntity<Map<String, Object>> generateMultiple(@RequestBody MultipleRequest request) {
         List<String> texts = request.getTexts();
@@ -182,7 +197,7 @@ public class PollinationsTestController {
                     }
                 }
 
-                // 저장
+                // 파일 저장
                 Path dirPath = Paths.get(contestImageDir);
                 if (!Files.exists(dirPath)) {
                     Files.createDirectories(dirPath);
@@ -191,8 +206,17 @@ public class PollinationsTestController {
                 Path filePath = Paths.get(contestImageDir, fileName);
                 Files.write(filePath, imageBytes);
 
+                // DB 저장
+                ImageFileEntity imageEntity = ImageFileEntity.builder()
+                        .fileName(fileName)
+                        .filePath(filePath.toString())
+                        .usageType(ImageUsageType.CONTEST_RESULT)
+                        .build();
+                ImageFileEntity savedImage = imageFileRepository.save(imageEntity);
+
                 results.add(Map.of(
                         "index", i + 1,
+                        "imageId", savedImage.getImageId(),
                         "koreanText", koreanText,
                         "englishPrompt", englishPrompt,
                         "success", true,
@@ -200,7 +224,7 @@ public class PollinationsTestController {
                         "filePath", filePath.toString()
                 ));
 
-                log.info("[{}/{}] 완료! {}초", i + 1, texts.size(), elapsed / 1000.0);
+                log.info("[{}/{}] 완료! DB ID: {}, {}초", i + 1, texts.size(), savedImage.getImageId(), elapsed / 1000.0);
 
                 // Rate Limit 방지를 위해 다음 요청 전 3초 대기
                 if (i < texts.size() - 1) {

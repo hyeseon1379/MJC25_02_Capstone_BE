@@ -68,6 +68,8 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/notices", "/api/notices/**").permitAll()
                         // 댓글 조회는 모든 사용자 허용 (GET 요청)
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/boards/*/replies", "/api/boards/*/replies/**").permitAll()
+                        // 도서 나눔 게시판 조회는 모든 사용자 허용 (GET 요청)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/share", "/api/share/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 기본 폼 로그인 비활성화

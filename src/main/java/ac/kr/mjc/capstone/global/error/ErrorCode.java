@@ -32,6 +32,9 @@ public enum ErrorCode {
     BOARD_NOT_FOUND("BOARD001", "게시글을 찾을 수 없습니다"),
     FORBIDDEN("BOARD002", "권한이 없습니다"),
 
+    // Share Board
+    SHARE_NOT_FOUND("SHARE001", "나눔 게시글을 찾을 수 없습니다"),
+
     // Reply
     REPLY_NOT_FOUND("REPLY001", "댓글을 찾을 수 없습니다"),
 

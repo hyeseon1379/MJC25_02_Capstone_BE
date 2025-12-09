@@ -8,7 +8,8 @@ public enum ImageUsageType {
     CONTEST("contest"),
     CONTEST_RESULT("contest_result"),
     NOTICE("notice"),
-    BOARD("board");
+    BOARD("board"),
+    SHARE("share");
 
     private final String directory;
 

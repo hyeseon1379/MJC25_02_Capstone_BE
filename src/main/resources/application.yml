@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: capstone
+  sql:
+    init:
+      mode: always  # ✅ 공통으로 적용 (AWS에서도 실행됨)
+      encoding: UTF-8
 
   mail:
     host: smtp.naver.com
@@ -37,6 +41,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none #none
+    defer-datasource-initialization: true
     show-sql: true
     properties:
       hibernate:

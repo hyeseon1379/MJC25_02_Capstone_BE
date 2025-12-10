@@ -62,7 +62,7 @@ services:
       - capstone
 
   frontend:
-    image: willy0126/capstone-fe:v1.0.3
+    image: willy0126/capstone-fe:v1.0.4
     build:
       context: .
 

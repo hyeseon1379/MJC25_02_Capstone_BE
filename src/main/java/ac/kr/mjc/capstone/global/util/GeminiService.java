@@ -20,73 +20,131 @@ public class GeminiService {
     private final WebClient webClient;
     private final AiConfig aiConfig;
 
-    private static final String GEMINI_TEXT_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final String POLLINATIONS_IMAGE_URL = "https://image.pollinations.ai/prompt/";
 
     /**
-     * 한글 글 내용을 바탕으로 영어 이미지 프롬프트 생성
+     * 한글 글 내용을 바탕으로 영어 이미지 프롬프트 생성 (Groq Llama 사용)
      */
     public String generateImagePrompt(String koreanText) {
-        log.info("Gemini API Key: {}", aiConfig.getGemini() != null ? 
-                (aiConfig.getGemini().getApiKey() != null ? "설정됨 (길이: " + aiConfig.getGemini().getApiKey().length() + ")" : "NULL") 
-                : "Gemini config NULL");
+        String groqApiKey = aiConfig.getGroq() != null ? aiConfig.getGroq().getApiKey() : null;
         
-        String requestPrompt = """
-            다음 한글 글을 바탕으로 이미지 생성에 적합한 영어 프롬프트를 만들어줘.
-            글의 분위기, 감정, 장면을 잘 표현해야 해.
-            동화책 삽화 스타일로 따뜻하고 아름다운 이미지가 나오도록 해줘.
-            프롬프트만 출력하고 다른 설명은 하지 마.
+        log.info("Groq API Key: {}", groqApiKey != null && !groqApiKey.isBlank() 
+                ? "설정됨 (길이: " + groqApiKey.length() + ")" : "NULL");
+
+        if (groqApiKey == null || groqApiKey.isBlank()) {
+            log.warn("Groq API Key가 없어서 기본 프롬프트 사용");
+            return generateDefaultPrompt(koreanText);
+        }
+
+        String systemPrompt = """
+            You are an expert at creating image generation prompts for children's book illustrations.
+            Convert the given Korean text into an English prompt.
             
-            글:
-            %s
-            """.formatted(koreanText);
+            IMPORTANT - EXTRACT KEY SCENE:
+            - Read the entire text and identify the SINGLE most important scene
+            - Focus on: main character + action + location
+            - Ignore dialogue and detailed descriptions
+            - Keep prompt SHORT (under 50 words for the scene description)
+            - Example: "a baby rabbit sitting alone in a dark forest" (NOT a long paragraph)
+            
+            STYLE REQUIREMENTS:
+            - Soft, gentle watercolor illustration style
+            - Natural and warm atmosphere like classic picture books
+            - Simple and clean design, not overly cute or exaggerated
+            - Muted, soft color palette
+            - Cozy and calm mood, like Beatrix Potter or Studio Ghibli
+            - Natural character proportions
+            
+            CRITICAL - NO TEXT IN IMAGE:
+            - Do NOT include any text, letters, words in the image
+            - Pure illustration only
+            
+            OUTPUT FORMAT:
+            Start with: "Gentle watercolor children's book illustration, no text,"
+            Then add: [main subject] + [action] + [location/setting]
+            Keep it simple and focused on ONE clear scene.
+            """;
 
         Map<String, Object> requestBody = Map.of(
-                "contents", List.of(
-                        Map.of("parts", List.of(
-                                Map.of("text", requestPrompt)
-                        ))
-                )
+                "model", "llama-3.1-8b-instant",
+                "messages", List.of(
+                        Map.of("role", "system", "content", systemPrompt),
+                        Map.of("role", "user", "content", koreanText)
+                ),
+                "temperature", 0.7,
+                "max_tokens", 200
         );
 
         try {
             Map<String, Object> response = webClient.post()
-                    .uri(GEMINI_TEXT_URL + "?key=" + aiConfig.getGemini().getApiKey())
+                    .uri(GROQ_API_URL)
                     .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + groqApiKey)
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(Map.class)
                     .block();
 
             // 응답에서 텍스트 추출
-            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
-            Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
-            List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-            String generatedPrompt = (String) parts.get(0).get("text");
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+            String generatedPrompt = (String) message.get("content");
 
-            log.info("Generated prompt: {}", generatedPrompt);
+            log.info("Groq 프롬프트 생성 완료: {}", generatedPrompt);
             return generatedPrompt.trim();
 
         } catch (Exception e) {
-            log.error("Gemini 프롬프트 생성 API 호출 실패: {}", e.getMessage());
-            throw new RuntimeException("프롬프트 생성 실패", e);
+            log.error("Groq API 호출 실패: {}", e.getMessage());
+            log.warn("기본 프롬프트로 대체합니다.");
+            return generateDefaultPrompt(koreanText);
         }
     }
 
     /**
+     * API 실패 시 기본 프롬프트 생성 (장문은 앞부분만 사용)
+     */
+    private String generateDefaultPrompt(String koreanText) {
+        String basePrompt = "Gentle watercolor children's book illustration, no text, no letters, " +
+                "soft muted colors, simple elegant style, warm cozy atmosphere, ";
+        
+        String cleaned = koreanText
+                .replaceAll("[0-9]+주차:?", "")
+                .replaceAll(":", "")
+                .replaceAll("[\"']", "")  // 따옴표 제거
+                .trim();
+        
+        // 장문일 경우 앞부분 100자만 사용
+        if (cleaned.length() > 100) {
+            cleaned = cleaned.substring(0, 100);
+        }
+        
+        return basePrompt + cleaned;
+    }
+
+    /**
      * Pollinations API로 이미지 생성 후 Base64 데이터 반환
-     * (무료, Rate Limit 여유로움)
      */
     public String generateImage(String prompt) {
+        return generateImage(prompt, null);
+    }
+
+    /**
+     * Pollinations API로 이미지 생성 (seed로 스타일 통일 가능)
+     */
+    public String generateImage(String prompt, Long seed) {
         log.info("Pollinations 이미지 생성 시작 - 프롬프트: {}", prompt);
 
         try {
-            // 1. URL 인코딩
             String encodedPrompt = URLEncoder.encode(prompt, StandardCharsets.UTF_8);
-            String apiUrl = POLLINATIONS_IMAGE_URL + encodedPrompt + "?width=1024&height=1024&nologo=true";
+            
+            // seed가 있으면 스타일 통일, 없으면 랜덤
+            String seedParam = (seed != null) ? "&seed=" + seed : "";
+            String apiUrl = POLLINATIONS_IMAGE_URL + encodedPrompt + 
+                    "?width=1024&height=1024&nologo=true" + seedParam;
+            
             log.info("Pollinations API URL: {}", apiUrl);
 
-            // 2. 이미지 바이트 배열로 받기
             byte[] imageBytes = webClient.get()
                     .uri(apiUrl)
                     .retrieve()
@@ -99,7 +157,6 @@ public class GeminiService {
 
             log.info("Pollinations 이미지 생성 성공 - 크기: {}KB", imageBytes.length / 1024);
 
-            // 3. Base64로 인코딩해서 반환 (기존 인터페이스 유지)
             return Base64.getEncoder().encodeToString(imageBytes);
 
         } catch (Exception e) {

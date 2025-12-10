@@ -19,7 +19,7 @@ public class Story extends BaseEntity {
     private Long storyId;
 
     @ManyToOne
-    @JoinColumn(name = "contest_Details_id")
+    @JoinColumn(name = "details_id")
     private ContestDetails contestDetails;
 
     @ManyToOne

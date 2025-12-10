@@ -18,6 +18,9 @@ DROP TABLE IF EXISTS `share_board`;
 DROP TABLE IF EXISTS `contest_details`;
 DROP TABLE IF EXISTS `challenge_details`;
 DROP TABLE IF EXISTS `subscription`;
+DROP TABLE IF EXISTS `subscription_plan`;
+DROP TABLE IF EXISTS `dialogue_emotions`;
+DROP TABLE IF EXISTS `dialogue_conversations`;
 DROP TABLE IF EXISTS `package_book`;
 DROP TABLE IF EXISTS `dialogue`;
 DROP TABLE IF EXISTS `book_details`;
@@ -102,6 +105,20 @@ CREATE TABLE `package_categories` (
     `category_id` BIGINT NOT NULL AUTO_INCREMENT,
     `category_name` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: subscription_plan (구독 플랜 - 도서 패키지와 분리)
+CREATE TABLE `subscription_plan` (
+    `plan_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) NOT NULL COMMENT '플랜명',
+    `description` VARCHAR(255) NULL COMMENT '플랜 설명',
+    `target_age` VARCHAR(50) NULL COMMENT '대상 연령',
+    `price` DECIMAL(10, 2) NOT NULL COMMENT '월 구독료',
+    `duration_days` INT NOT NULL DEFAULT 30 COMMENT '구독 기간(일)',
+    `is_active` BOOLEAN NOT NULL DEFAULT TRUE COMMENT '활성 여부',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`plan_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: challenge
@@ -199,11 +216,13 @@ CREATE TABLE `contest` (
     `start_date` DATETIME NULL,
     `end_date` DATETIME NULL,
     `progress_status` ENUM('PLANNED', 'ONGOING', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PLANNED',
-    `image` VARCHAR(500) NULL,
+    `image_id` BIGINT NULL,
     PRIMARY KEY (`contest_id`),
     KEY `idx_user_id` (`user_id`),
+    KEY `idx_image_id` (`image_id`),
     KEY `idx_progress_status` (`progress_status`),
-    CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_contest_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE, -- 여기 콤마 추가
+    CONSTRAINT `fk_contest_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: board
@@ -303,13 +322,13 @@ CREATE TABLE `package_book` (
     CONSTRAINT `fk_package_book_package` FOREIGN KEY (`package_id`) REFERENCES `package` (`package_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Table: subscription
+-- Table: subscription (plan_id 참조로 변경)
 CREATE TABLE `subscription` (
     `subscription_id` BIGINT NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT NOT NULL,
-    `package_id` BIGINT NOT NULL,
+    `plan_id` BIGINT NOT NULL COMMENT 'subscription_plan 참조',
     `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `start_date` DATETIME NOT NULL,
     `end_date` DATETIME NOT NULL,
     `auto_renew` BOOLEAN NOT NULL DEFAULT FALSE,
@@ -319,10 +338,40 @@ CREATE TABLE `subscription` (
     `amount` DECIMAL(10,2) NOT NULL,
     PRIMARY KEY (`subscription_id`),
     KEY `idx_user_id` (`user_id`),
-    KEY `idx_package_id` (`package_id`),
+    KEY `idx_plan_id` (`plan_id`),
     KEY `idx_status` (`status`),
     CONSTRAINT `fk_subscription_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_subscription_package` FOREIGN KEY (`package_id`) REFERENCES `package` (`package_id`) ON DELETE CASCADE
+    CONSTRAINT `fk_subscription_plan` FOREIGN KEY (`plan_id`) REFERENCES `subscription_plan` (`plan_id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: dialogue_conversations (독후 활동 대화 기록)
+CREATE TABLE `dialogue_conversations` (
+    `conversation_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
+    `book_id` BIGINT NULL COMMENT '연관 도서 (선택사항)',
+    `title` VARCHAR(100) NOT NULL COMMENT '대화 제목/요약',
+    `content` TEXT NOT NULL COMMENT '대화 내용',
+    `ai_question` VARCHAR(500) NULL COMMENT 'AI 제안 질문',
+    `is_deleted` BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Soft Delete',
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`conversation_id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_book_id` (`book_id`),
+    KEY `idx_created_at` (`created_at`),
+    CONSTRAINT `fk_dialogue_conv_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_dialogue_conv_book` FOREIGN KEY (`book_id`) REFERENCES `book` (`book_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table: dialogue_emotions (대화 감정 태그 - 다대다)
+CREATE TABLE `dialogue_emotions` (
+    `emotion_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `conversation_id` BIGINT NOT NULL,
+    `emotion_type` VARCHAR(20) NOT NULL COMMENT 'happy, normal, touched, difficult, curious, growth',
+    PRIMARY KEY (`emotion_id`),
+    KEY `idx_conversation_id` (`conversation_id`),
+    KEY `idx_emotion_type` (`emotion_type`),
+    CONSTRAINT `fk_emotion_conversation` FOREIGN KEY (`conversation_id`) REFERENCES `dialogue_conversations` (`conversation_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table: challenge_details
@@ -354,35 +403,27 @@ CREATE TABLE `contest_details` (
     CONSTRAINT `fk_contest_details_contest` FOREIGN KEY (`contest_id`) REFERENCES `contest` (`contest_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Table: share_board
+-- Table: share_board (도서 나눔 게시판)
 CREATE TABLE `share_board` (
     `share_id` BIGINT NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT NOT NULL,
-    `category_id` BIGINT NULL,
     `title` VARCHAR(100) NOT NULL,
     `content` TEXT NULL,
     `image_id` BIGINT NULL,
-    `location` VARCHAR(255) NULL,
-    `meet_status` ENUM('SCHEDULED', 'COMPLETED', 'CANCELLED') NULL,
-    `max_participants` INT NULL,
-    `current_participants` INT NOT NULL DEFAULT 1,
-    `datetime` DATETIME NULL,
-    `price` INT NULL DEFAULT 0,
-    `book_status` ENUM('A', 'B', 'C') NOT NULL DEFAULT 'A' COMMENT '등급 : A, B, C',
+    `meet_status` ENUM('SHARING', 'RESERVED', 'COMPLETED') NOT NULL DEFAULT 'SHARING',
     `create_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `views` INT NOT NULL DEFAULT 0,
     PRIMARY KEY (`share_id`),
     KEY `idx_user_id` (`user_id`),
-    KEY `idx_category_id` (`category_id`),
     KEY `idx_image_id` (`image_id`),
-    KEY `idx_datetime` (`datetime`),
+    KEY `idx_meet_status` (`meet_status`),
     CONSTRAINT `fk_share_board_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_share_board_category` FOREIGN KEY (`category_id`) REFERENCES `package_categories` (`category_id`) ON DELETE SET NULL,
     CONSTRAINT `fk_share_board_image` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- Table: reply (오류 수정: FOREIGN FOREIGN -> FOREIGN KEY)
+-- Table: reply (오류 수정: FOREIGN -> FOREIGN KEY)
 CREATE TABLE `reply` (
     `reply_id` BIGINT NOT NULL AUTO_INCREMENT,
     `board_id` BIGINT NOT NULL,
@@ -520,6 +561,17 @@ VALUES (1, 2,'child1', '2018-05-15', 'M', 1, 'http://example.com/profiles/exampl
        (2, 2,'child2', '2019-05-15', 'F', 2, 'http://example.com/profiles/example.jpg', '#FF5733'),
        (3, 3,'child3', '2017-05-15', 'M', 1, 'http://example.com/profiles/example.jpg', '#FF5733');
 /*!40000 ALTER TABLE `children` ENABLE KEYS */;
+UNLOCK TABLES;
+
+-- Subscription Plan 시드 데이터
+LOCK TABLES `subscription_plan` WRITE;
+/*!40000 ALTER TABLE `subscription_plan` DISABLE KEYS */;
+INSERT INTO `subscription_plan` (`plan_id`, `name`, `description`, `target_age`, `price`, `duration_days`, `is_active`)
+VALUES
+    (1, '영·유아 패키지', '우리 아이의 첫 독서 여정', '0-7세', 19900.00, 30, TRUE),
+    (2, '초등·청소년 패키지', '생각의 깊이를 키우는 독서', '8-13세', 24900.00, 30, TRUE),
+    (3, '부모 패키지', '부모의 성장이 자녀의 성장으로', '부모', 22900.00, 30, TRUE);
+/*!40000 ALTER TABLE `subscription_plan` ENABLE KEYS */;
 UNLOCK TABLES;
 
 

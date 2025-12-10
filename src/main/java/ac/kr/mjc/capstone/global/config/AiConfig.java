@@ -14,10 +14,17 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class AiConfig {
 
     private Gemini gemini;
+    private Groq groq;
 
     @Getter
     @Setter
     public static class Gemini {
+        private String apiKey;
+    }
+
+    @Getter
+    @Setter
+    public static class Groq {
         private String apiKey;
     }
 

@@ -1,6 +1,5 @@
 package ac.kr.mjc.capstone.domain.subscription.entity;
 
-import ac.kr.mjc.capstone.domain.packaze.entity.Packaze;
 import ac.kr.mjc.capstone.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -26,8 +25,8 @@ public class Subscription {
     private UserEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "package_id", nullable = false)
-    private Packaze packaze;
+    @JoinColumn(name = "plan_id", nullable = false)
+    private SubscriptionPlan plan;
 
     @CreationTimestamp
     @Column(name = "create_at", nullable = false, updatable = false)

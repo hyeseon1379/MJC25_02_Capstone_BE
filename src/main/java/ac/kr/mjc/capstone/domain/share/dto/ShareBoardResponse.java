@@ -21,6 +21,7 @@ public class ShareBoardResponse {
     private String content;
     private MeetStatus meetStatus;
     private String imageUrl;
+    private Long imageId;
     private AuthorInfo author;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -51,6 +52,7 @@ public class ShareBoardResponse {
                 .content(entity.getContent())
                 .meetStatus(entity.getMeetStatus())
                 .imageUrl(entity.getImageFile() != null ? entity.getImageFile().getFilePath() : null)
+                .imageId(entity.getImageFile() != null ? entity.getImageFile().getImageId() : null)
                 .author(AuthorInfo.builder()
                         .userId(entity.getUser().getUserId())
                         .nickname(entity.getUser().getNickname())

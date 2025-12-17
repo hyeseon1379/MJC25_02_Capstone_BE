@@ -29,9 +29,10 @@ public class AuthController {
                     .secure(true)                                // https 환경에서만 쿠키가 발동합니다.
                     .sameSite("None")                            // 동일 사이트과 크로스 사이트에 모두 쿠키 전송이 가능합니다
                     .httpOnly(true)                              // 브라우저에서 쿠키에 접근할 수 없도록 제한
+                    .maxAge(7 * 24 * 60 * 60)
                     .build();
 
-            response.setHeader("Set-cookie", responseCookie.toString());
+            response.setHeader("Set-Cookie", responseCookie.toString());
             return ApiResponse.success("로그인 성공", tokenResponse.getAccessToken());
 
         } catch (Exception e) {
@@ -56,6 +57,7 @@ public class AuthController {
                 .secure(true)
                 .sameSite("None")
                 .httpOnly(true)
+                .maxAge(7 * 24 * 60 * 60)
                 .build();
 
         response.setHeader("Set-Cookie", responseCookie.toString());
@@ -70,6 +72,7 @@ public class AuthController {
                 .secure(true)                                // https 환경에서만 쿠키가 발동합니다.
                 .sameSite("None")                            // 동일 사이트과 크로스 사이트에 모두 쿠키 전송이 가능합니다
                 .httpOnly(true)                              // 브라우저에서 쿠키에 접근할 수 없도록 제한
+                .maxAge(7 * 24 * 60 * 60)
                 .build();
 
         response.setHeader("Set-Cookie", responseCookie.toString());

@@ -31,6 +31,7 @@ services:
       # 로컬 PC의 18888 포트 -> 컨테이너의 8082 포트로 연결
       - "18888:8082"
     environment:
+      - APP_BASE_URL=${APP_BASE_URL}
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=prod
 

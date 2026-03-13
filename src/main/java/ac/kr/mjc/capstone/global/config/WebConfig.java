@@ -19,8 +19,10 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://127.0.0.1/",
                         "http://127.0.0.1/",
                         "http://127.0.0.1:8080/",
-                        "http://localhost:8080/"
+                        "http://localhost:8080/",
                         // 배포 서버용 주소
+                        "http://chaek-ieum.duckdns.org",
+                        "http://chaek-ieum.duckdns.org:18888"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")

@@ -26,7 +26,7 @@ public class AuthController {
             TokenResponse tokenResponse = authService.login(request);
             ResponseCookie responseCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
                     .path("/")
-                    .secure(true)                                // https 환경에서만 쿠키가 발동합니다.
+                    .secure(false)                                // https 환경에서만 쿠키가 발동합니다.
                     .sameSite("None")                            // 동일 사이트과 크로스 사이트에 모두 쿠키 전송이 가능합니다
                     .httpOnly(true)                              // 브라우저에서 쿠키에 접근할 수 없도록 제한
                     .maxAge(7 * 24 * 60 * 60)
@@ -54,7 +54,7 @@ public class AuthController {
         // RefreshToken을 HttpOnly 쿠키로 설정
         ResponseCookie responseCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
                 .path("/")
-                .secure(true)
+                .secure(false)
                 .sameSite("None")
                 .httpOnly(true)
                 .maxAge(7 * 24 * 60 * 60)
@@ -69,7 +69,7 @@ public class AuthController {
         TokenResponse tokenResponse = authService.refreshAccessToken(request.getRefreshToken());
         ResponseCookie responseCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
                 .path("/")
-                .secure(true)                                // https 환경에서만 쿠키가 발동합니다.
+                .secure(false)                                // https 환경에서만 쿠키가 발동합니다.
                 .sameSite("None")                            // 동일 사이트과 크로스 사이트에 모두 쿠키 전송이 가능합니다
                 .httpOnly(true)                              // 브라우저에서 쿠키에 접근할 수 없도록 제한
                 .maxAge(7 * 24 * 60 * 60)
